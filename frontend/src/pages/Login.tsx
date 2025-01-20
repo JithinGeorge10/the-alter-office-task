@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { app } from "../firebase/config";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useNavigate } from 'react-router-dom';
 
+import Cookies from 'js-cookie';
 import axios from "axios";
 const Login: React.FC = () => {
+    const navigate = useNavigate();
+    let userId = Cookies.get('jwt');
+    console.log(userId)
+    useEffect(() => {
+        if (userId) {
+          navigate('/');
+        }
+      }, [ userId]);
+
     const handleGoogleLogin = async () => {
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
@@ -21,6 +32,10 @@ const Login: React.FC = () => {
                 withCredentials: true,
               });
               console.log(response)
+              if(response.data){
+                navigate('/');
+              }
+
         } catch (error) {
             console.log(error);
         }

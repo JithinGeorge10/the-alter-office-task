@@ -13,7 +13,7 @@ export const verifyjwt = async (req, res) => {
     try {
         if (req.cookies.jwt) {
             res.send(true)
-        } else {
+        } else { 
             res.send(false)
         }
     } catch (error) {
@@ -23,31 +23,35 @@ export const verifyjwt = async (req, res) => {
 
 
 
-export const login = async (req: { body: any }, res: any) => {
+export const login = async (req, res) => {
     try {
         const { email, displayName, photoURL } = req.body;
+
         if (!email) {
             return res.status(400).send('Email is required');
         }
 
         const userDetails = await user.findOneAndUpdate(
-            { email }, 
-            { 
+            { email },
+            {
                 email,
                 displayName,
                 photoURL,
-                createdAt: new Date() 
+                createdAt: new Date(),
             },
-            { 
-                new: true, 
-                upsert: true
+            {
+                new: true,
+                upsert: true, 
             }
         );
+
         const token = createToken(email, userDetails.id);
+
         res.cookie('jwt', token, {
-            maxAge, 
+            httpOnly: false, 
+            maxAge,
             sameSite: 'None',
-            secure: true,
+            secure: true, 
         });
 
         return res.status(200).json(userDetails);
