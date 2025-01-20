@@ -2,6 +2,7 @@ import React from 'react';
 import { app } from "../firebase/config";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
+import axios from "axios";
 const Login: React.FC = () => {
     const handleGoogleLogin = async () => {
         const auth = getAuth(app);
@@ -12,6 +13,14 @@ const Login: React.FC = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             console.log("User Info:", user);
+            console.log(import.meta.env.VITE_AUTH_SERVICE_URL)
+            let response = await axios.post(`${import.meta.env.VITE_AUTH_SERVICE_URL}/user-login`, user, {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                withCredentials: true,
+              });
+              console.log(response)
         } catch (error) {
             console.log(error);
         }

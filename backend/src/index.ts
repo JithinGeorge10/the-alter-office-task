@@ -2,22 +2,29 @@ import express from 'express';
 import cors from 'cors'
 import morgan from "morgan";
 import cookieParser from 'cookie-parser'
+import mongoose from 'mongoose'
+import dotenv from 'dotenv'
+import authRoutes from './routes/authRoutes'
 const app = express()
-app.use(express.json());
-
+dotenv.config()
 
 const corsOptions = {
-  origin: '', 
-  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  credentials: true
+    origin:'http://localhost:5173',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    credentials: true
 };
 
-
 app.use(cors(corsOptions));
-
 app.use(cookieParser());
+app.use(express.json());
 app.use(morgan("dev"));
 
-app.listen(3000, () => {
-  console.log(`Server is running on port 3000`)
+
+app.use(authRoutes)
+
+
+app.listen(5000, () => {
+    console.log(`Server starteds`)
 })
+const databaseurl =process.env.DATABASE_URL
+mongoose.connect(databaseurl).then(() => console.log('Database connected')).catch(err=>console.log(err.message))
