@@ -1,6 +1,6 @@
 import React from 'react';
 import Login from './pages/Login'; // Import Login component
-
+import './index.css'
 const App: React.FC = () => {
   return (
     <div>
