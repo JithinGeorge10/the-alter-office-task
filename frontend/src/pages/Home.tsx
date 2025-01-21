@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { useLocation } from 'react-router-dom';
 import {
   FaSort,
   FaThLarge,
@@ -30,12 +31,15 @@ interface Task {
 }
 
 function Home() {
-  let userId = Cookies.get('jwt');
+  const location = useLocation();
+  const { userId } = location.state || {};
+  
+  let userToken = Cookies.get('jwt');
   useEffect(() => {
-    if (!userId) {
+    if (!userToken) {
       navigate('/login');
     }
-  }, [userId]);
+  }, [userToken]);
 
 
 
@@ -136,11 +140,11 @@ function Home() {
 
   const handleSubmit = () => {
     (async () => {
-      if (!taskName || !text || !date || !status || !category) {
+      if (!taskName || !text || !date || !status || !category ||!userId) {
         alert("Please fill in all the required fields.");
         return;
       }
-      await addTask(taskName,text,date,status,category)
+      await addTask(taskName,text,date,status,category,userId)
       setTaskName('')
       setText('')
       setFile(null)
@@ -148,6 +152,7 @@ function Home() {
       setDate('')
       setStatus('')
       setIsModalOpen(false);
+      navigate('/')
     })()
 
   }

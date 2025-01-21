@@ -8,14 +8,14 @@ import { getQuizQuestions } from '../services/loginService';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    let userId = Cookies.get('jwt');
+    let userToken = Cookies.get('jwt');
 
 
     useEffect(() => {
-        if (userId) {
+        if (userToken) {
           navigate('/');
         }
-      }, [ userId]);
+      }, [ userToken]);
 
 
 
@@ -27,9 +27,11 @@ const Login: React.FC = () => {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
           const userData = await getQuizQuestions(user);
+          console.log(userData)
           if (userData.data) {
             navigate('/', {
               state: {
+                userId:userData.data._id,
                 displayName: user.displayName,
                 photoURL: user.photoURL
               }
