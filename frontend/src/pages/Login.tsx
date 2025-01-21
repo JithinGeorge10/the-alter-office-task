@@ -2,44 +2,45 @@ import React, { useEffect } from 'react';
 import { app } from "../firebase/config";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-
 import Cookies from 'js-cookie';
-import axios from "axios";
+import { getQuizQuestions } from '../services/loginService';
+
+
 const Login: React.FC = () => {
     const navigate = useNavigate();
     let userId = Cookies.get('jwt');
-    console.log(userId)
+
+
     useEffect(() => {
         if (userId) {
           navigate('/');
         }
       }, [ userId]);
 
-    const handleGoogleLogin = async () => {
+
+
+      const handleGoogleLogin = async () => {
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-
         try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            console.log("User Info:", user);
-            console.log(import.meta.env.VITE_AUTH_SERVICE_URL)
-            let response = await axios.post(`${import.meta.env.VITE_AUTH_SERVICE_URL}/user-login`, user, {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                withCredentials: true,
-              });
-              console.log(response)
-              if(response.data){
-                navigate('/');
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          const userData = await getQuizQuestions(user);
+          console.log(userData);
+          if (userData.data) {
+            navigate('/', {
+              state: {
+                displayName: user.displayName,
+                photoURL: user.photoURL
               }
-
+            });
+          }
         } catch (error) {
-            console.log(error);
+          console.log(error);
         }
-    };
+      };
+      
 
     return (
         <>
