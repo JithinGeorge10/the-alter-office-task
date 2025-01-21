@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes'
+import taskRoutes from './routes/taskRoutes';
 const app = express()
 dotenv.config()
 
@@ -21,6 +22,7 @@ app.use(morgan("dev"));
 
 
 app.use(authRoutes)
+app.use(taskRoutes)
 
 
 app.listen(5000, () => {

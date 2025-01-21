@@ -27,7 +27,6 @@ const Login: React.FC = () => {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
           const userData = await getQuizQuestions(user);
-          console.log(userData);
           if (userData.data) {
             navigate('/', {
               state: {
