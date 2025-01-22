@@ -8,7 +8,7 @@ import {
 import { addTask, changeStatus, fetchTasks } from "../services/taskService";
 import { Section, Task } from '../types'
 
-function List({ categoryValue, searchValue ,taskValue}: any) {
+function List({ categoryValue, searchValue, taskValue }: any) {
     console.log(categoryValue)
     const storedUserId = localStorage.getItem('userId');
     const [searchText, setSearchText] = useState('');
@@ -100,26 +100,26 @@ function List({ categoryValue, searchValue ,taskValue}: any) {
         }
     }, [searchValue])
 
-  
+
     useEffect(() => {
         if (!taskValue) return;
         (async () => {
-            const {taskName, text, date, status, category, storedUserId}=taskValue
-              const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
-              console.log(newTaskResponse)
-              setTasks((prevTasks) => {
+            const { taskName, text, date, status, category, storedUserId } = taskValue
+            const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
+            console.log(newTaskResponse)
+            setTasks((prevTasks) => {
                 if (newTaskResponse && newTaskResponse.data.task) {
-                  const newTask = newTaskResponse.data.task as Task;
-                  return [...prevTasks, newTask];
+                    const newTask = newTaskResponse.data.task as Task;
+                    return [...prevTasks, newTask];
                 }
                 console.error("Invalid task response", newTaskResponse);
                 return prevTasks;
-              });
-        
+            });
+
         })();
     }, [taskValue]);
-    
-    
+
+
 
     return (
         <>
@@ -156,16 +156,16 @@ function List({ categoryValue, searchValue ,taskValue}: any) {
 
                         {openSections.includes(section.title) && (
                             <div className="flex flex-col items-start p-4 border border-gray-300 rounded-md mt-2 bg-gray-100">
-                                <div className="w-full">
+                                <div className="w-full overflow-x-auto">
                                     {filterTasksByStatus(section.title).length === 0 ? (
                                         <div className="text-center text-black">
                                             No Tasks in {section.title}
                                         </div>
                                     ) : (
-                                        <table className="w-full">
+                                        <table className="w-full text-sm md:text-base">
+
                                             <tbody>
                                                 {filterTasksByStatus(section.title).map((task, index) => {
-
                                                     const taskDate = new Date(task.dueDate);
                                                     const today = new Date();
                                                     const isToday =
@@ -178,25 +178,27 @@ function List({ categoryValue, searchValue ,taskValue}: any) {
                                                             year: "numeric",
                                                         }).format(taskDate);
                                                     return (
-                                                        <tr key={index} className="border-b border-gray-300">
+                                                        <tr
+                                                            key={index}
+                                                            className="border-b border-gray-300"
+                                                        >
                                                             <td className="py-3 px-3 flex items-center">
                                                                 <input
                                                                     type="checkbox"
                                                                     className="mr-2"
                                                                     readOnly
-
                                                                 />
-                                                                <FaBars className="mr-2" />
+                                                                <FaBars className="mr-2 hidden md:inline-block" />
                                                                 <FaCheckCircle
                                                                     className={`mr-2 ${task.status === "completed"
-                                                                        ? "text-green-500"
-                                                                        : "text-gray-400"
+                                                                            ? "text-green-500"
+                                                                            : "text-gray-400"
                                                                         }`}
                                                                 />
                                                                 <span
                                                                     className={`${task.status === "completed"
-                                                                        ? "line-through text-black-500"
-                                                                        : ""
+                                                                            ? "line-through text-black-500"
+                                                                            : ""
                                                                         }`}
                                                                 >
                                                                     {task.title}
@@ -208,15 +210,26 @@ function List({ categoryValue, searchValue ,taskValue}: any) {
                                                             <td className="py-3 px-3 w-1/4 text-center">
                                                                 <select
                                                                     value={task.status}
-                                                                    onChange={(e) => handleStatusChange(e, task._id)}
+                                                                    onChange={(e) =>
+                                                                        handleStatusChange(
+                                                                            e,
+                                                                            task._id
+                                                                        )
+                                                                    }
                                                                     className="appearance-none bg-gray-300 border rounded-lg py-2 px-4 pr-10"
                                                                 >
                                                                     <option value="todo">Todo</option>
-                                                                    <option value="inprogress">In Progress</option>
-                                                                    <option value="completed">Complete</option>
+                                                                    <option value="inprogress">
+                                                                        In Progress
+                                                                    </option>
+                                                                    <option value="completed">
+                                                                        Complete
+                                                                    </option>
                                                                 </select>
                                                             </td>
-                                                            <td className="py-3 px-3 w-1/4">{task.category}</td>
+                                                            <td className="py-3 px-3 w-1/4">
+                                                                {task.category}
+                                                            </td>
                                                             <td className="text-lg font-bold">...</td>
                                                         </tr>
                                                     );
@@ -227,6 +240,7 @@ function List({ categoryValue, searchValue ,taskValue}: any) {
                                 </div>
                             </div>
                         )}
+
                     </div>
                 ))}
             </main>

@@ -13,7 +13,6 @@ function Modal({ modalValue ,addTaskValue}: any) {
     const [date, setDate] = useState('');
     const [status, setStatus] = useState('');
     const maxLength = 3000;
-    const [taskDetails, setTaskDetails] = useState({});
     const closeModal = () => {
         setTaskName('')
         setText('')

@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useLocation } from 'react-router-dom';
 import {
-  FaThLarge, FaSearch, FaBold, FaItalic, FaListOl,
-  FaListUl, FaTimes,
+  FaThLarge, FaSearch, FaListUl,
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import List from "../components/List";
 import Modal from "../components/Modal";
+import Board from "../components/Board"; 
 
 function Home() {
   const location = useLocation();
@@ -18,9 +18,8 @@ function Home() {
       localStorage.setItem('userId', userId);
     }
   }, [userId]);
-  const storedUserId = localStorage.getItem('userId');
-
-
+  
+  const navigate = useNavigate();
   let userToken = Cookies.get('jwt');
   useEffect(() => {
     if (!userToken) {
@@ -28,71 +27,26 @@ function Home() {
     }
   }, [userToken]);
 
-  const navigate = useNavigate();
-  const [filterCategory, setFilterCategory] = useState('')
-  const [searchTitle, setSearchTitle] = useState('')
-  const [taskName, setTaskName] = useState('')
-  const [text, setText] = useState('');
-  const [file, setFile] = useState(null);
-  const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
-  const [status, setStatus] = useState('');
-  const maxLength = 3000;
+  const [filterCategory, setFilterCategory] = useState('');
+  const [searchTitle, setSearchTitle] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [taskDetails, setTaskDetails] = useState({}); 
+  const [taskDetails, setTaskDetails] = useState({});
+  const [activeView, setActiveView] = useState('list'); // New state to track view
 
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (e:any) => {
     const searchKey = e.target.value;
-    setSearchTitle(searchKey)
-    setSearchText(searchKey)
+    setSearchTitle(searchKey);
+    setSearchText(searchKey);
   };
 
-  const handleFilterCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilterCategory(e.target.value)
+  const handleFilterCategory = (e:any) => {
+    setFilterCategory(e.target.value);
   };
 
-  const handleChange = (event: any) => {
-    if (event.target.value.length <= maxLength) {
-      setText(event.target.value);
-    }
-  };
-  const handleCategory = (event: any) => {
-    setCategory(event.target.value);
-  }
-
-  const handleTaskName = (event: any) => {
-    if (event.target.value.length <= maxLength) {
-      setTaskName(event.target.value);
-    }
-  };
-  const handleStatus = (event: any) => {
-    setStatus(event.target.value);
-  };
-  const handleDate = (event: any) => {
-    setDate(event.target.value)
-  }
-  const handleFileUpload = (e: any) => {
-    const uploadedFile = e.target.files[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-    }
-  };
   const handleAddTaskClick = () => {
     setIsModalOpen(true);
   };
-
-  const closeModal = () => {
-    setTaskName('')
-    setText('')
-    setFile(null)
-    setCategory('')
-    setDate('')
-    setStatus('')
-    setIsModalOpen(false);
-  };
-
 
   const handleLogout = () => {
     document.cookie.split(";").forEach(cookie => {
@@ -100,25 +54,7 @@ function Home() {
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     });
     navigate('/login');
-  }
-
-  const handleSubmit = () => {
-    (async () => {
-      if (!taskName || !text || !date || !status || !category || !storedUserId) {
-        alert("Please fill in all the required fields.");
-        return;
-      }
-      setTaskDetails({taskName, text, date, status, category, storedUserId, });
-      setTaskName('')
-      setText('')
-      setFile(null)
-      setCategory('')
-      setDate('')
-      setStatus('')
-      setIsModalOpen(false);
-      navigate('/')
-    })()
-  }
+  };
 
   return (
     <>
@@ -127,11 +63,17 @@ function Home() {
 
         <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-white">
           <div className="flex gap-4">
-            <button className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 underline">
+            <button
+              className={`flex items-center gap-2 px-3 py-1 ${activeView === 'list' ? 'underline' : ''}`}
+              onClick={() => setActiveView('list')} // Set view to "list"
+            >
               <FaListUl className="w-5 h-5 text-gray-600" />
               List
             </button>
-            <button className="flex items-center gap-2 px-3 py-1 text-gray-500 hover:bg-gray-100">
+            <button
+              className={`flex items-center gap-2 px-3 py-1 ${activeView === 'board' ? 'underline' : ''}`}
+              onClick={() => setActiveView('board')} // Set view to "board"
+            >
               <FaThLarge className="w-5 h-5 text-gray-600" />
               Board
             </button>
@@ -181,10 +123,14 @@ function Home() {
           </div>
         </div>
 
-        {isModalOpen && ( 
-          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails}/>
+        {isModalOpen && (
+          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} />
         )}
-        <List  categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails}></List>
+        {activeView === 'list' ? (
+          <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} />
+        ) : (
+          <Board />
+        )}
       </div>
     </>
   );
