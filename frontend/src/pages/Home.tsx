@@ -15,7 +15,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
-import { addTask, fetchTasks } from "../services/taskService";
+import { addTask, changeStatus, fetchTasks } from "../services/taskService";
 
 
 interface Section {
@@ -48,7 +48,7 @@ function Home() {
   }, [userId]);
   const storedUserId = localStorage.getItem('userId');
 
-  console.log(storedUserId)
+
   let userToken = Cookies.get('jwt');
   useEffect(() => {
     if (!userToken) {
@@ -67,15 +67,54 @@ function Home() {
   const maxLength = 3000;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
+  const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [searchText, setSearchText] = useState('');
+
 
   useEffect(() => {
     if (!storedUserId) return;
     (async () => {
       const response = await fetchTasks(storedUserId);
       setTasks(response);
+      setOriginalTasks(response)
     })();
   }, [storedUserId]);
+
+
+
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchKey = e.target.value;
+    console.log(searchKey)
+    setSearchText(searchKey);
+
+    if (searchKey.trim() === '') {
+      setTasks(originalTasks);
+    } else {
+      const filteredTasks = tasks.filter(task =>
+        task.title.toLowerCase().includes(searchKey.toLowerCase())
+      );
+      setTasks(filteredTasks);
+    }
+  };
+
+  const handleFilterCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const filterKey = e.target.value;
+    if (!filterKey || filterKey === 'Category') {
+      return;
+    }
+    if (filterKey === 'clearfilter') {
+      setTasks(originalTasks);
+    } else {
+      const filteredTasks = originalTasks.filter(task =>
+        task.category.toLowerCase() === filterKey.toLowerCase()
+      );
+      console.log(filteredTasks);
+      setTasks(filteredTasks);
+    }
+  };
+
 
 
   const handleChange = (event: any) => {
@@ -125,7 +164,6 @@ function Home() {
     { title: "completed", color: "#CEFFCC" },
   ];
 
-  console.log(tasks)
   const dummyTasks: Task[] = tasks
 
   const filterTasksByStatus = (status: string) => {
@@ -182,6 +220,18 @@ function Home() {
     })()
   }
 
+  const handleStatusChange = (e: any, _id: string) => {
+
+    (async () => {
+      const status = e.target.value
+      const userId = _id
+      const response = await changeStatus(status, userId);
+      console.log(response)
+    })()
+
+
+
+  }
 
 
   return (
@@ -213,9 +263,13 @@ function Home() {
         <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-white mt-2">
           <div className="flex flex-wrap gap-4">
             <h1 className="text-gray-500">Filter by:</h1>
-            <select className="border rounded-full px-3 py-1 text-gray-500">
-              <option value="">Category</option>
+            <select onChange={handleFilterCategory} className="border rounded-full px-3 py-1 text-gray-500">
+              <option selected disabled value="">Category</option>
+              <option value="work">Work</option>
+              <option value="personal">Personal</option>
+              <option value="clearfilter">Clear Filter</option>
             </select>
+
             <select className="border rounded-full px-3 py-1 text-gray-500">
               <option value="">Due Date</option>
             </select>
@@ -227,6 +281,8 @@ function Home() {
                 type="text"
                 placeholder="Search"
                 className="focus:outline-none placeholder-black w-full"
+                value={searchText}
+                onChange={handleSearchChange}
               />
             </div>
             <button
@@ -400,75 +456,81 @@ function Home() {
               </div>
 
               {openSections.includes(section.title) && (
-  <div className="flex flex-col items-start p-4 border border-gray-300 rounded-md mt-2 bg-gray-100">
-    <div className="w-full">
-      {filterTasksByStatus(section.title).length === 0 ? (
-        <div className="text-center text-black">
-          No Tasks in {section.title}
-        </div>
-      ) : (
-        <table className="w-full">
-          <tbody>
-            {filterTasksByStatus(section.title).map((task, index) => {
-              // Format the due date
-              const taskDate = new Date(task.dueDate);
-              const today = new Date();
-              const isToday =
-                taskDate.toDateString() === today.toDateString();
-              const formattedDate = isToday
-                ? "Today"
-                : new Intl.DateTimeFormat("en-US", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  }).format(taskDate);
+                <div className="flex flex-col items-start p-4 border border-gray-300 rounded-md mt-2 bg-gray-100">
+                  <div className="w-full">
+                    {filterTasksByStatus(section.title).length === 0 ? (
+                      <div className="text-center text-black">
+                        No Tasks in {section.title}
+                      </div>
+                    ) : (
+                      <table className="w-full">
+                        <tbody>
+                          {filterTasksByStatus(section.title).map((task, index) => {
 
-              return (
-                <tr key={index} className="border-b border-gray-300">
-                  <td className="py-3 px-3 flex items-center">
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      readOnly
-   
-                    />
-                    <FaBars className="mr-2" />
-                    <FaCheckCircle
-                      className={`mr-2 ${
-                        task.status === "completed"
-                          ? "text-green-500"
-                          : "text-gray-400"
-                      }`}
-                    />
-                    <span
-                      className={`${
-                        task.status === "completed"
-                          ? "line-through text-black-500"
-                          : ""
-                      }`}
-                    >
-                      {task.title}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 w-1/4 text-center">
-                    {formattedDate}
-                  </td>
-                  <td className="py-3 px-3 w-1/4 text-center">
-                    <button className="rounded-lg py-2 px-4 bg-gray-300">
-                      {task.status}
-                    </button>
-                  </td>
-                  <td className="py-3 px-3 w-1/4">{task.category}</td>
-                  <td className="text-lg font-bold">...</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </div>
-  </div>
-)}
+                            const taskDate = new Date(task.dueDate);
+                            const today = new Date();
+                            const isToday =
+                              taskDate.toDateString() === today.toDateString();
+                            const formattedDate = isToday
+                              ? "Today"
+                              : new Intl.DateTimeFormat("en-US", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              }).format(taskDate);
+
+                            return (
+                              <tr key={index} className="border-b border-gray-300">
+                                <td className="py-3 px-3 flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    className="mr-2"
+                                    readOnly
+
+                                  />
+                                  <FaBars className="mr-2" />
+                                  <FaCheckCircle
+                                    className={`mr-2 ${task.status === "completed"
+                                      ? "text-green-500"
+                                      : "text-gray-400"
+                                      }`}
+                                  />
+                                  <span
+                                    className={`${task.status === "completed"
+                                      ? "line-through text-black-500"
+                                      : ""
+                                      }`}
+                                  >
+                                    {task.title}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3 w-1/4 text-center">
+                                  {formattedDate}
+                                </td>
+                                <td className="py-3 px-3 w-1/4 text-center">
+                                  <select
+                                    value={task.status}
+                                    onChange={(e) => handleStatusChange(e, task._id)}
+                                    className="appearance-none bg-gray-300 border rounded-lg py-2 px-4 pr-10"
+                                  >
+                                    <option value="todo">Todo</option>
+                                    <option value="inprogress">In Progress</option>
+                                    <option value="completed">Complete</option>
+                                  </select>
+
+
+                                </td>
+                                <td className="py-3 px-3 w-1/4">{task.category}</td>
+                                <td className="text-lg font-bold">...</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              )}
 
 
             </div>

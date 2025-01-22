@@ -53,3 +53,33 @@ export const fetchTask = async (req, res) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+
+export const changeStatus = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
+    }
+
+    const { status, userId } = req.query;
+
+    if (!status || !userId) {
+      return res.status(400).json({ message: 'Bad Request: Missing required fields' });
+    }
+
+    const updatedUser = await Task.findByIdAndUpdate(
+      userId,
+      { status },
+      { new: true }
+    );
+    console.log(updatedUser)
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Status updated', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating status:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

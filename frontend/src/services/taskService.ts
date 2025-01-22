@@ -35,3 +35,26 @@ export const fetchTasks = async (userId: string) => {
         console.error("Error fetching tasks:", error);
     }
 };
+
+
+
+
+export const changeStatus = async (status:any,userId:any) => {
+    try {
+        const response = await axios.get(
+            `${import.meta.env.VITE_AUTH_SERVICE_URL}/change-status`,
+            {
+                params: { status,userId }, 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+            }
+        );
+        console.log(response.data); 
+
+        return response.data
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+    }
+};

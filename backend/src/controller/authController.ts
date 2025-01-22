@@ -8,21 +8,6 @@ const createToken = (email: any, userId: any) => {
     return jwt.sign({ email, userId }, process.env.JWT_KEY, { expiresIn: maxAge })
 }
 
-
-export const verifyjwt = async (req, res) => {
-    try {
-        if (req.cookies.jwt) {
-            res.send(true)
-        } else { 
-            res.send(false)
-        }
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-
-
 export const login = async (req, res) => {
     try {
         const { email, displayName, photoURL } = req.body;
