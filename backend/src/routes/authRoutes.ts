@@ -1,6 +1,6 @@
 import {Router} from 'express'
-import { login, verifyjwt } from '../controller/authController'
-import {verifyToken} from '../middleware/authMiddleware'
+import { login } from '../controller/authController'
+
 const authRoutes=Router()
 
 authRoutes.post('/user-login',login)
