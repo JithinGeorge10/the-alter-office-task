@@ -219,11 +219,7 @@ function Home() {
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
     try {
       const status = e.target.value;
-  
-      // Make the API call
-      const response = await changeStatus(status, _id);
-  
-      // Update the state immutably
+        const response = await changeStatus(status, _id);
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task._id === response.user._id ? { ...task, status } : task
@@ -234,8 +230,6 @@ function Home() {
           task._id === response.user._id ? { ...task, status } : task
         )
       );
-      
-  
       console.log(response);
     } catch (error) {
       console.error("Failed to change status:", error);
