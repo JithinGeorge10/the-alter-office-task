@@ -1,9 +1,21 @@
 
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 function Navbar() {
     const location = useLocation();
     const { displayName, photoURL } = location.state || {};
+     useEffect(() => {
+        if (displayName && photoURL) {
+          localStorage.setItem('displayName', displayName);
+          localStorage.setItem('photoURL', photoURL);
+        }
+      }, [displayName,photoURL]);
+
+      const storedDisplayName = localStorage.getItem('displayName');
+      const storedPhoto = localStorage.getItem('photoURL');
+      const photo = storedPhoto ?? undefined;
+
   return (
     <div>
        <header className="flex items-center justify-between p-4">
@@ -17,11 +29,11 @@ function Navbar() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center">
                   <img
-                    src={photoURL}
+                    src={photo}
                     alt="Profile"
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                  <span className="ml-3 font-medium font-bold text-gray-600 text-sm">{displayName}</span>
+                  <span className="ml-3 font-medium font-bold text-gray-600 text-sm">{storedDisplayName}</span>
                 </div>
               </div>
             </header>

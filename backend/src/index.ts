@@ -26,7 +26,7 @@ app.use(taskRoutes)
 
 
 app.listen(5000, () => {
-    console.log(`Server starteds`)
+    console.log(`Server started`)
 })
 const databaseurl =process.env.DATABASE_URL
 mongoose.connect(databaseurl).then(() => console.log('Database connected')).catch(err=>console.log(err.message))

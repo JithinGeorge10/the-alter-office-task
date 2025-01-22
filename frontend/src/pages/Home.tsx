@@ -15,7 +15,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
-import { addTask } from "../services/taskService";
+import { addTask, fetchTasks } from "../services/taskService";
 
 
 interface Section {
@@ -24,16 +24,31 @@ interface Section {
 }
 
 interface Task {
-  taskName: string;
-  dueOn: string;
+  _id: string;
+  title: string;
+  description: string;
   status: string;
-  taskCategory: string;
+  dueDate: string;
+  category: string;
+  position: number;
+  userId: string;
+  attachments: any[];
+  createdAt: string;
+  updatedAt: string;
 }
+
 
 function Home() {
   const location = useLocation();
   const { userId } = location.state || {};
-  
+  useEffect(() => {
+    if (userId) {
+      localStorage.setItem('userId', userId);
+    }
+  }, [userId]);
+  const storedUserId = localStorage.getItem('userId');
+
+  console.log(storedUserId)
   let userToken = Cookies.get('jwt');
   useEffect(() => {
     if (!userToken) {
@@ -42,17 +57,27 @@ function Home() {
   }, [userToken]);
 
 
-
+  const navigate = useNavigate();
   const [taskName, setTaskName] = useState('')
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
   const [status, setStatus] = useState('');
-
-
-
   const maxLength = 3000;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openSections, setOpenSections] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (!storedUserId) return;
+    (async () => {
+      const response = await fetchTasks(storedUserId);
+      setTasks(response);
+    })();
+  }, [storedUserId]);
+
+
   const handleChange = (event: any) => {
     if (event.target.value.length <= maxLength) {
       setText(event.target.value);
@@ -73,10 +98,6 @@ function Home() {
   const handleDate = (event: any) => {
     setDate(event.target.value)
   }
-
-  const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const handleFileUpload = (e: any) => {
     const uploadedFile = e.target.files[0];
     if (uploadedFile) {
@@ -85,9 +106,11 @@ function Home() {
   };
 
 
-  const [openSections, setOpenSections] = useState<string[]>([]);
+
 
   const toggleSection = (sectionTitle: string) => {
+    console.log("Toggling section: ", sectionTitle);
+    console.log("Current open sections: ", openSections);
     setOpenSections((prevOpenSections) =>
       prevOpenSections.includes(sectionTitle)
         ? prevOpenSections.filter((title) => title !== sectionTitle)
@@ -97,20 +120,13 @@ function Home() {
 
 
   const sections: Section[] = [
-    { title: "Todo", color: "#FAC3FF" },
-    { title: "In-Progress", color: "#85D9F1" },
-    { title: "Completed", color: "#CEFFCC" },
+    { title: "todo", color: "#FAC3FF" },
+    { title: "inprogress", color: "#85D9F1" },
+    { title: "completed", color: "#CEFFCC" },
   ];
 
-
-  const dummyTasks: Task[] = [
-    { taskName: "Task 1", dueOn: "2025-01-25", status: "Todo", taskCategory: "Work" },
-    { taskName: "Task 2", dueOn: "2025-01-28", status: "In-Progress", taskCategory: "Personal" },
-    { taskName: "Task 3", dueOn: "2025-01-30", status: "Completed", taskCategory: "Work" },
-    { taskName: "Task 4", dueOn: "2025-02-05", status: "Todo", taskCategory: "Personal" },
-    { taskName: "Task 5", dueOn: "2025-02-10", status: "In-Progress", taskCategory: "Work" },
-    { taskName: "Task 6", dueOn: "2025-02-12", status: "Completed", taskCategory: "Personal" },
-  ];
+  console.log(tasks)
+  const dummyTasks: Task[] = tasks
 
   const filterTasksByStatus = (status: string) => {
     return dummyTasks.filter(task => task.status === status);
@@ -140,11 +156,21 @@ function Home() {
 
   const handleSubmit = () => {
     (async () => {
-      if (!taskName || !text || !date || !status || !category ||!userId) {
+      if (!taskName || !text || !date || !status || !category || !storedUserId) {
         alert("Please fill in all the required fields.");
         return;
       }
-      await addTask(taskName,text,date,status,category,userId)
+      const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
+      console.log(newTaskResponse)
+      setTasks((prevTasks) => {
+        if (newTaskResponse && newTaskResponse.data.task) {
+          const newTask = newTaskResponse.data.task as Task;
+          return [...prevTasks, newTask];
+        }
+        console.error("Invalid task response", newTaskResponse);
+        return prevTasks;
+      });
+
       setTaskName('')
       setText('')
       setFile(null)
@@ -154,21 +180,21 @@ function Home() {
       setIsModalOpen(false);
       navigate('/')
     })()
-
   }
+
+
+
   return (
     <>
       <div className="min-h-screen bg-white">
+        <Navbar />
 
-        <Navbar></Navbar>
-
-        <div className="flex items-center justify-between px-4 py-2 bg-white">
+        <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-white">
           <div className="flex gap-4">
             <button className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 underline">
               <FaListUl className="w-5 h-5 text-gray-600" />
               List
             </button>
-
             <button className="flex items-center gap-2 px-3 py-1 text-gray-500 hover:bg-gray-100">
               <FaThLarge className="w-5 h-5 text-gray-600" />
               Board
@@ -176,7 +202,7 @@ function Home() {
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-sm  border rounded-xl hover:bg-gray-100"
+            className="flex items-center gap-2 px-4 py-2 text-sm border rounded-xl hover:bg-gray-100"
             style={{ backgroundColor: "#FFF9F9" }}
           >
             <img src="logout.png" alt="Logout" className="w-5 h-5" />
@@ -184,9 +210,9 @@ function Home() {
           </button>
         </div>
 
-        <div className="flex items-center justify-between px-4 py-2 bg-white mt-2">
-          <div className="flex gap-4">
-            <h1 className='text-gray-500'>Filter by:</h1>
+        <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-white mt-2">
+          <div className="flex flex-wrap gap-4">
+            <h1 className="text-gray-500">Filter by:</h1>
             <select className="border rounded-full px-3 py-1 text-gray-500">
               <option value="">Category</option>
             </select>
@@ -194,19 +220,18 @@ function Home() {
               <option value="">Due Date</option>
             </select>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <div className="flex items-center border-black border rounded-full px-3 py-1">
               <FaSearch className="text-gray-500 mr-2" />
               <input
                 type="text"
                 placeholder="Search"
-                className="focus:outline-none placeholder-black"
+                className="focus:outline-none placeholder-black w-full"
               />
             </div>
-
             <button
               onClick={handleAddTaskClick}
-              className="px-10 py-2 text-white rounded-full text-xs hover:bg-[#5E1470]"
+              className="px-6 md:px-10 py-2 text-white rounded-full text-xs hover:bg-[#5E1470]"
               style={{ backgroundColor: "#7B1984" }}
             >
               ADD TASK
@@ -216,19 +241,14 @@ function Home() {
 
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg" style={{
-              width: "800px",
-              height: "650px",
-            }}>
+            <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
               <div className="flex justify-between">
                 <h2 className="text-xl font-bold">Create Task</h2>
                 <button onClick={closeModal} className="text-gray-600">
                   <FaTimes className="text-2xl" />
                 </button>
               </div>
-              <br />
-              <div className="border-b border-gray-300 w-full"></div>
-
+              <div className="border-b border-gray-300 w-full my-2"></div>
               <div className="mt-4">
                 <input
                   type="text"
@@ -255,38 +275,50 @@ function Home() {
                   </span>
                 </div>
 
-
-                <br />
-                <div className="flex justify-between mb-2">
-                  <div className="flex flex-col items-start gap-1">
+                <div className="flex flex-wrap justify-between mb-2 gap-4">
+                  <div className="flex flex-col gap-1">
                     <span className="text-sm text-gray-500">Task Category*</span>
                     <div className="flex items-start gap-1">
-      <button
-        onClick={handleCategory}
-        value="work"
-        className={`px-4 py-1 border rounded-full ${category === 'work' ? 'bg-blue-500 text-white' : 'bg-transparent text-black'}`}
-      >
-        Work
-      </button>
-      <button
-        onClick={handleCategory}
-        value="personal"
-        className={`px-4 py-1 border rounded-full ${category === 'personal' ? 'bg-blue-500 text-white' : 'bg-transparent text-black'}`}
-      >
-        Personal
-      </button>
-    </div>
+                      <button
+                        onClick={handleCategory}
+                        value="work"
+                        className={`px-4 py-1 border rounded-full ${category === "work"
+                          ? "bg-blue-500 text-white"
+                          : "bg-transparent text-black"
+                          }`}
+                      >
+                        Work
+                      </button>
+                      <button
+                        onClick={handleCategory}
+                        value="personal"
+                        className={`px-4 py-1 border rounded-full ${category === "personal"
+                          ? "bg-blue-500 text-white"
+                          : "bg-transparent text-black"
+                          }`}
+                      >
+                        Personal
+                      </button>
+                    </div>
                   </div>
 
-
-                  <div className="flex flex-col items-start gap-1">
+                  <div className="flex flex-col gap-1">
                     <span className="text-sm text-gray-500">Due on*</span>
-                    <input onChange={handleDate} type="date" className="border rounded p-1" />
+                    <input
+                      onChange={handleDate}
+                      type="date"
+                      className="border rounded p-1"
+                    />
                   </div>
-                  <div className="flex flex-col items-start gap-1">
+                  <div className="flex flex-col gap-1">
                     <span className="text-sm text-gray-700">Task Status*</span>
-                    <select onChange={handleStatus} className="border rounded p-1 text-gray-700">
-                      <option value="" disabled selected>Choose</option>
+                    <select
+                      onChange={handleStatus}
+                      className="border rounded p-1 text-gray-700"
+                    >
+                      <option value="" disabled selected>
+                        Choose
+                      </option>
                       <option value="todo">Todo</option>
                       <option value="inprogress">In-Progress</option>
                       <option value="completed">Completed</option>
@@ -294,33 +326,30 @@ function Home() {
                   </div>
                 </div>
 
-                <div className="flex justify-between mb-2">
+                <div className="flex flex-col gap-2">
                   <span className="text-sm text-gray-700">Attachment</span>
-                </div>
-                <div
-                  className="w-full h-10 border-2  border-gray-500 bg-gray-100 flex items-center justify-center cursor-pointer"
-                  onClick={() => {
-                    const fileInput = document.getElementById('fileInput');
-                    if (fileInput) {
-                      fileInput.click(); // Safe to call click()
-                    }
-                  }}
-                >
-                  <input
-                    type="file"
-                    id="fileInput"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                  <span className="text-gray-500">Drop your files here or update</span>
+                  <div
+                    className="w-full h-10 border-2 border-gray-500 bg-gray-100 flex items-center justify-center cursor-pointer"
+                    onClick={() => {
+                      const fileInput = document.getElementById("fileInput");
+                      if (fileInput) {
+                        fileInput.click();
+                      }
+                    }}
+                  >
+                    <input
+                      type="file"
+                      id="fileInput"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                    <span className="text-gray-500">
+                      Drop your files here or update
+                    </span>
+                  </div>
                 </div>
 
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <div className="flex justify-end gap-4">
+                <div className="flex justify-end gap-4 mt-4">
                   <button
                     onClick={closeModal}
                     className="px-6 py-2 text-sm bg-gray-200 rounded-full"
@@ -335,12 +364,10 @@ function Home() {
                     Create
                   </button>
                 </div>
-
               </div>
             </div>
           </div>
         )}
-        <br />
         <div className="mx-4 border-b border-gray-300"></div>
         <div className="flex mx-4 mb-0 text-gray-500">
           <span className="font-bold w-1/5">Task</span>
@@ -352,10 +379,6 @@ function Home() {
           <span className="font-bold w-1/5  text-center">Category</span>
           <span className="font-bold w-1/5"></span>
         </div>
-
-
-
-
         <main className="p-4">
           {sections.map((section) => (
             <div key={section.title} className="mb-4">
@@ -364,64 +387,97 @@ function Home() {
                 style={{ backgroundColor: section.color }}
                 onClick={() => toggleSection(section.title)}
               >
-                <span>{section.title} ({filterTasksByStatus(section.title).length})</span>
-                <span className="relative">
-                  <div
-                    className={`w-3 h-3 border-t-2 border-r-2 transform ${openSections.includes(section.title) ? "rotate-180" : "-rotate-45"}`}
-                    style={{
-                      borderColor: "black",
-                      transformOrigin: "center",
-                    }}
-                  ></div>
+                <span>
+                  {section.title} ({filterTasksByStatus(section.title).length})
                 </span>
+                <div
+                  className={`w-3 h-3 border-t-2 border-r-2 transform ${openSections.includes(section.title)
+                    ? "rotate-180"
+                    : "-rotate-45"
+                    }`}
+                  style={{ borderColor: "black" }}
+                ></div>
               </div>
 
               {openSections.includes(section.title) && (
-                <div
-                  className="flex flex-col justify-start items-start p-4 border border-gray-300 rounded-md mt-2"
-                  style={{ height: "316px", backgroundColor: "#F1F1F1" }}
-                >
-                  <div className="w-full">
-                    {filterTasksByStatus(section.title).length === 0 ? (
-                      <div className="text-center text-black">
-                        No Tasks in {section.title}
-                      </div>
-                    ) : (
-                      <table className="w-full">
-                        <tbody>
-                          {filterTasksByStatus(section.title).map((task, index) => (
-                            <tr key={index} className="border-b border-gray-300 mb-4">
-                              <td className="py-3 px-3 flex items-center">
-                                <input type="checkbox" className="mr-2" />
-                                <FaBars className="mr-2" />
-                                <FaCheckCircle className="text-gray-400 mr-2" />
-                                {task.taskName}
-                              </td>
-                              <td className="py-3 px-3 w-1/4 text-center">{task.dueOn}</td>
-                              <td className="py-3 px-3 w-1/4 text-center">
-                                <div className="flex items-center justify-center gap-2">
-                                  <button className="bg-gray-300 rounded-lg py-2 px-4 text-center max-w-44 mx-auto">
-                                    {task.status}
-                                  </button>
-                                </div>
-                              </td>
-                              <td className="py-3 px-3 w-1/4">{task.taskCategory}</td>
-                              <td className="text-lg font-bold">...</td>
+  <div className="flex flex-col items-start p-4 border border-gray-300 rounded-md mt-2 bg-gray-100">
+    <div className="w-full">
+      {filterTasksByStatus(section.title).length === 0 ? (
+        <div className="text-center text-black">
+          No Tasks in {section.title}
+        </div>
+      ) : (
+        <table className="w-full">
+          <tbody>
+            {filterTasksByStatus(section.title).map((task, index) => {
+              // Format the due date
+              const taskDate = new Date(task.dueDate);
+              const today = new Date();
+              const isToday =
+                taskDate.toDateString() === today.toDateString();
+              const formattedDate = isToday
+                ? "Today"
+                : new Intl.DateTimeFormat("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }).format(taskDate);
 
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                </div>
-              )}
+              return (
+                <tr key={index} className="border-b border-gray-300">
+                  <td className="py-3 px-3 flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      readOnly
+   
+                    />
+                    <FaBars className="mr-2" />
+                    <FaCheckCircle
+                      className={`mr-2 ${
+                        task.status === "completed"
+                          ? "text-green-500"
+                          : "text-gray-400"
+                      }`}
+                    />
+                    <span
+                      className={`${
+                        task.status === "completed"
+                          ? "line-through text-black-500"
+                          : ""
+                      }`}
+                    >
+                      {task.title}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 w-1/4 text-center">
+                    {formattedDate}
+                  </td>
+                  <td className="py-3 px-3 w-1/4 text-center">
+                    <button className="rounded-lg py-2 px-4 bg-gray-300">
+                      {task.status}
+                    </button>
+                  </td>
+                  <td className="py-3 px-3 w-1/4">{task.category}</td>
+                  <td className="text-lg font-bold">...</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </div>
+)}
+
+
             </div>
           ))}
         </main>
       </div>
     </>
-  )
+  );
+
 }
 
 export default Home;

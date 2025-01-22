@@ -3,7 +3,7 @@ import Task from "../model/taskModel"
 export const addTask = async (req, res) => {
   try {
     const { taskName, description, date, status, category, userId } = req.body;
-
+    console.log(req.body)
     if (!taskName || !date || !status || !category || !userId) {
       return res.status(400).json({ message: 'All fields are required' });
     }
@@ -29,4 +29,21 @@ export const addTask = async (req, res) => {
     console.error('Error adding task:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
+};
+
+
+export const fetchTask = async (req, res) => {
+    try {
+        const { userId } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+        const userTasks = await Task.find({ userId });
+
+        return res.status(200).json(userTasks);
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 };

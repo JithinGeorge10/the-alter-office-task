@@ -9,8 +9,29 @@ export const addTask = async (taskName: string, text: string, date: string, stat
             },
             withCredentials: true,
         });
-        console.log(response)
+        return response
     } catch (error) {
         console.log(error);
+    }
+};
+
+
+export const fetchTasks = async (userId: string) => {
+    try {
+        const response = await axios.get(
+            `${import.meta.env.VITE_AUTH_SERVICE_URL}/fetch-task`,
+            {
+                params: { userId }, 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+            }
+        );
+        console.log(response.data); 
+
+        return response.data
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
     }
 };
