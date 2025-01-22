@@ -5,33 +5,13 @@ import {
     FaCheckCircle
 
 } from "react-icons/fa";
-import { changeStatus, fetchTasks } from "../services/taskService";
-interface Section {
-    title: string;
-    color: string;
-  }
+import { addTask, changeStatus, fetchTasks } from "../services/taskService";
+import { Section, Task } from '../types'
 
-  interface Task {
-    _id: string;
-    title: string;
-    description: string;
-    status: string;
-    dueDate: string;
-    category: string;
-    position: number;
-    userId: string;
-    attachments: any[];
-    createdAt: string;
-    updatedAt: string;
-  }
-
-  interface ListProps {
-    categoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  }
-
-
-function List({categoryChange}:ListProps) {
+function List({ categoryValue, searchValue ,taskValue}: any) {
+    console.log(categoryValue)
     const storedUserId = localStorage.getItem('userId');
+    const [searchText, setSearchText] = useState('');
 
     const [openSections, setOpenSections] = useState<string[]>([]);
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
@@ -42,16 +22,16 @@ function List({categoryChange}:ListProps) {
         { title: "completed", color: "#CEFFCC" },
     ];
 
-   
-
     useEffect(() => {
         if (!storedUserId) return;
         (async () => {
-          const response = await fetchTasks(storedUserId);
-          setTasks(response);
-          setOriginalTasks(response)
+            const response = await fetchTasks(storedUserId);
+            setTasks(response);
+            setOriginalTasks(response)
         })();
-      }, [storedUserId]);
+    }, [storedUserId]);
+
+
     const toggleSection = (sectionTitle: string) => {
         console.log("Toggling section: ", sectionTitle);
         console.log("Current open sections: ", openSections);
@@ -61,23 +41,86 @@ function List({categoryChange}:ListProps) {
                 : [...prevOpenSections, sectionTitle]
         );
     };
+
+
     const dummyTasks: Task[] = tasks
     const filterTasksByStatus = (status: string) => {
         return dummyTasks.filter(task => task.status === status);
     }
 
-    const handleStatusChange = (e: any, _id: string) => {
+    const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
+        try {
+            const status = e.target.value;
+            const response = await changeStatus(status, _id);
+            setTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task._id === response.user._id ? { ...task, status } : task
+                )
+            );
+            setOriginalTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task._id === response.user._id ? { ...task, status } : task
+                )
+            );
+            console.log(response);
+        } catch (error) {
+            console.error("Failed to change status:", error);
+        }
+    };
 
+
+    useEffect(() => {
+        const filterKey = categoryValue;
+        if (!filterKey || filterKey === 'Category') {
+            return;
+        }
+        if (filterKey === 'clearfilter') {
+            setTasks(originalTasks);
+        } else {
+            const filteredTasks = originalTasks.filter(task =>
+                task.category.toLowerCase() === filterKey.toLowerCase()
+            );
+            setTasks(filteredTasks);
+        }
+    }, [categoryValue])
+
+
+    useEffect(() => {
+        const searchKey = searchValue
+        console.log(searchKey)
+        setSearchText(searchKey);
+
+        if (searchKey.trim() === '') {
+            setTasks(originalTasks);
+        } else {
+            const filteredTasks = tasks.filter(task =>
+                task.title.toLowerCase().includes(searchKey.toLowerCase())
+            );
+            setTasks(filteredTasks);
+        }
+    }, [searchValue])
+
+  
+    useEffect(() => {
+        if (!taskValue) return;
         (async () => {
-          const status = e.target.value
-          const userId = _id
-          const response = await changeStatus(status, userId);
-          console.log(response)
-        })()
+            const {taskName, text, date, status, category, storedUserId}=taskValue
+              const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
+              console.log(newTaskResponse)
+              setTasks((prevTasks) => {
+                if (newTaskResponse && newTaskResponse.data.task) {
+                  const newTask = newTaskResponse.data.task as Task;
+                  return [...prevTasks, newTask];
+                }
+                console.error("Invalid task response", newTaskResponse);
+                return prevTasks;
+              });
+        
+        })();
+    }, [taskValue]);
     
     
-    
-      }
+
     return (
         <>
             <div className="mx-4 border-b border-gray-300"></div>
@@ -134,7 +177,6 @@ function List({categoryChange}:ListProps) {
                                                             month: "short",
                                                             year: "numeric",
                                                         }).format(taskDate);
-
                                                     return (
                                                         <tr key={index} className="border-b border-gray-300">
                                                             <td className="py-3 px-3 flex items-center">
@@ -173,8 +215,6 @@ function List({categoryChange}:ListProps) {
                                                                     <option value="inprogress">In Progress</option>
                                                                     <option value="completed">Complete</option>
                                                                 </select>
-
-
                                                             </td>
                                                             <td className="py-3 px-3 w-1/4">{task.category}</td>
                                                             <td className="text-lg font-bold">...</td>
@@ -187,8 +227,6 @@ function List({categoryChange}:ListProps) {
                                 </div>
                             </div>
                         )}
-
-
                     </div>
                 ))}
             </main>

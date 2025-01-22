@@ -3,40 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useLocation } from 'react-router-dom';
 import {
-  FaSort,
-  FaThLarge,
-  FaSearch,
-  FaBars,
-  FaCheckCircle,
-  FaBold,
-  FaItalic,
-  FaListOl,
-  FaListUl,
-  FaTimes,
+  FaThLarge, FaSearch, FaBold, FaItalic, FaListOl,
+  FaListUl, FaTimes,
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
-import { addTask, changeStatus, fetchTasks } from "../services/taskService";
-
-
-interface Section {
-  title: string;
-  color: string;
-}
-
-interface Task {
-  _id: string;
-  title: string;
-  description: string;
-  status: string;
-  dueDate: string;
-  category: string;
-  position: number;
-  userId: string;
-  attachments: any[];
-  createdAt: string;
-  updatedAt: string;
-}
-
+import List from "../components/List";
 
 function Home() {
   const location = useLocation();
@@ -57,6 +28,8 @@ function Home() {
   }, [userToken]);
 
   const navigate = useNavigate();
+  const [filterCategory, setFilterCategory] = useState('')
+  const [searchTitle, setSearchTitle] = useState('')
   const [taskName, setTaskName] = useState('')
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
@@ -65,53 +38,19 @@ function Home() {
   const [status, setStatus] = useState('');
   const maxLength = 3000;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [openSections, setOpenSections] = useState<string[]>([]);
-  const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [taskDetails, setTaskDetails] = useState({}); 
 
-
-  useEffect(() => {
-    if (!storedUserId) return;
-    (async () => {
-      const response = await fetchTasks(storedUserId);
-      setTasks(response);
-      setOriginalTasks(response)
-    })();
-  }, [storedUserId]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchKey = e.target.value;
-    console.log(searchKey)
-    setSearchText(searchKey);
-
-    if (searchKey.trim() === '') {
-      setTasks(originalTasks);
-    } else {
-      const filteredTasks = tasks.filter(task =>
-        task.title.toLowerCase().includes(searchKey.toLowerCase())
-      );
-      setTasks(filteredTasks);
-    }
+    setSearchTitle(searchKey)
+    setSearchText(searchKey)
   };
 
   const handleFilterCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const filterKey = e.target.value;
-    if (!filterKey || filterKey === 'Category') {
-      return;
-    }
-    if (filterKey === 'clearfilter') {
-      setTasks(originalTasks);
-    } else {
-      const filteredTasks = originalTasks.filter(task =>
-        task.category.toLowerCase() === filterKey.toLowerCase()
-      );
-      console.log(filteredTasks);
-      setTasks(filteredTasks);
-    }
+    setFilterCategory(e.target.value)
   };
-
-
 
   const handleChange = (event: any) => {
     if (event.target.value.length <= maxLength) {
@@ -139,32 +78,6 @@ function Home() {
       setFile(uploadedFile);
     }
   };
-
-
-
-
-  const toggleSection = (sectionTitle: string) => {
-    console.log("Toggling section: ", sectionTitle);
-    console.log("Current open sections: ", openSections);
-    setOpenSections((prevOpenSections) =>
-      prevOpenSections.includes(sectionTitle)
-        ? prevOpenSections.filter((title) => title !== sectionTitle)
-        : [...prevOpenSections, sectionTitle]
-    );
-  };
-
-
-  const sections: Section[] = [
-    { title: "todo", color: "#FAC3FF" },
-    { title: "inprogress", color: "#85D9F1" },
-    { title: "completed", color: "#CEFFCC" },
-  ];
-
-  const dummyTasks: Task[] = tasks
-
-  const filterTasksByStatus = (status: string) => {
-    return dummyTasks.filter(task => task.status === status);
-  }
   const handleAddTaskClick = () => {
     setIsModalOpen(true);
   };
@@ -194,17 +107,7 @@ function Home() {
         alert("Please fill in all the required fields.");
         return;
       }
-      const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
-      console.log(newTaskResponse)
-      setTasks((prevTasks) => {
-        if (newTaskResponse && newTaskResponse.data.task) {
-          const newTask = newTaskResponse.data.task as Task;
-          return [...prevTasks, newTask];
-        }
-        console.error("Invalid task response", newTaskResponse);
-        return prevTasks;
-      });
-
+      setTaskDetails({taskName, text, date, status, category, storedUserId, });
       setTaskName('')
       setText('')
       setFile(null)
@@ -215,27 +118,6 @@ function Home() {
       navigate('/')
     })()
   }
-
-  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
-    try {
-      const status = e.target.value;
-        const response = await changeStatus(status, _id);
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task._id === response.user._id ? { ...task, status } : task
-        )
-      );
-      setOriginalTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task._id === response.user._id ? { ...task, status } : task
-        )
-      );
-      console.log(response);
-    } catch (error) {
-      console.error("Failed to change status:", error);
-    }
-  };
-  
 
   return (
     <>
@@ -298,7 +180,7 @@ function Home() {
           </div>
         </div>
 
-        {isModalOpen && (
+        {isModalOpen && ( 
           <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
               <div className="flex justify-between">
@@ -427,118 +309,10 @@ function Home() {
             </div>
           </div>
         )}
-        <div className="mx-4 border-b border-gray-300"></div>
-        <div className="flex mx-4 mb-0 text-gray-500">
-          <span className="font-bold w-1/5">Task</span>
-          <span className="font-bold flex items-center w-2/5 justify-center">
-            Due
-            <FaSort className="ml-2 text-gray-500" />
-          </span>
-          <span className="font-bold w-1/5  text-center">Status</span>
-          <span className="font-bold w-1/5  text-center">Category</span>
-          <span className="font-bold w-1/5"></span>
-        </div>
-        <main className="p-4">
-          {sections.map((section) => (
-            <div key={section.title} className="mb-4">
-              <div
-                className="flex justify-between items-center p-2 rounded-md text-black cursor-pointer"
-                style={{ backgroundColor: section.color }}
-                onClick={() => toggleSection(section.title)}
-              >
-                <span>
-                  {section.title} ({filterTasksByStatus(section.title).length})
-                </span>
-                <div
-                  className={`w-3 h-3 border-t-2 border-r-2 transform ${openSections.includes(section.title)
-                    ? "rotate-180"
-                    : "-rotate-45"
-                    }`}
-                  style={{ borderColor: "black" }}
-                ></div>
-              </div>
-
-              {openSections.includes(section.title) && (
-                <div className="flex flex-col items-start p-4 border border-gray-300 rounded-md mt-2 bg-gray-100">
-                  <div className="w-full">
-                    {filterTasksByStatus(section.title).length === 0 ? (
-                      <div className="text-center text-black">
-                        No Tasks in {section.title}
-                      </div>
-                    ) : (
-                      <table className="w-full">
-                        <tbody>
-                          {filterTasksByStatus(section.title).map((task, index) => {
-
-                            const taskDate = new Date(task.dueDate);
-                            const today = new Date();
-                            const isToday =
-                              taskDate.toDateString() === today.toDateString();
-                            const formattedDate = isToday
-                              ? "Today"
-                              : new Intl.DateTimeFormat("en-US", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              }).format(taskDate);
-
-                            return (
-                              <tr key={index} className="border-b border-gray-300">
-                                <td className="py-3 px-3 flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    className="mr-2"
-                                    readOnly
-
-                                  />
-                                  <FaBars className="mr-2" />
-                                  <FaCheckCircle
-                                    className={`mr-2 ${task.status === "completed"
-                                      ? "text-green-500"
-                                      : "text-gray-400"
-                                      }`}
-                                  />
-                                  <span
-                                    className={`${task.status === "completed"
-                                      ? "line-through text-black-500"
-                                      : ""
-                                      }`}
-                                  >
-                                    {task.title}
-                                  </span>
-                                </td>
-                                <td className="py-3 px-3 w-1/4 text-center">
-                                  {formattedDate}
-                                </td>
-                                <td className="py-3 px-3 w-1/4 text-center">
-                                  <select
-                                    value={task.status}
-                                    onChange={(e) => handleStatusChange(e, task._id)}
-                                    className="appearance-none bg-gray-300 border rounded-lg py-2 px-4 pr-10"
-                                  >
-                                    <option value="todo">Todo</option>
-                                    <option value="inprogress">In Progress</option>
-                                    <option value="completed">Complete</option>
-                                  </select>
-                                </td>
-                                <td className="py-3 px-3 w-1/4">{task.category}</td>
-                                <td className="text-lg font-bold">...</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </main>
+        <List  categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails}></List>
       </div>
     </>
   );
-
 }
 
 export default Home;
