@@ -56,7 +56,6 @@ function Home() {
     }
   }, [userToken]);
 
-
   const navigate = useNavigate();
   const [taskName, setTaskName] = useState('')
   const [text, setText] = useState('');
@@ -80,9 +79,6 @@ function Home() {
       setOriginalTasks(response)
     })();
   }, [storedUserId]);
-
-
-
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchKey = e.target.value;
@@ -220,19 +216,32 @@ function Home() {
     })()
   }
 
-  const handleStatusChange = (e: any, _id: string) => {
-
-    (async () => {
-      const status = e.target.value
-      const userId = _id
-      const response = await changeStatus(status, userId);
-      console.log(response)
-    })()
-
-
-
-  }
-
+  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
+    try {
+      const status = e.target.value;
+  
+      // Make the API call
+      const response = await changeStatus(status, _id);
+  
+      // Update the state immutably
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === response.user._id ? { ...task, status } : task
+        )
+      );
+      setOriginalTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === response.user._id ? { ...task, status } : task
+        )
+      );
+      
+  
+      console.log(response);
+    } catch (error) {
+      console.error("Failed to change status:", error);
+    }
+  };
+  
 
   return (
     <>
@@ -517,8 +526,6 @@ function Home() {
                                     <option value="inprogress">In Progress</option>
                                     <option value="completed">Complete</option>
                                   </select>
-
-
                                 </td>
                                 <td className="py-3 px-3 w-1/4">{task.category}</td>
                                 <td className="text-lg font-bold">...</td>
@@ -531,8 +538,6 @@ function Home() {
                   </div>
                 </div>
               )}
-
-
             </div>
           ))}
         </main>
@@ -543,5 +548,3 @@ function Home() {
 }
 
 export default Home;
-
-
