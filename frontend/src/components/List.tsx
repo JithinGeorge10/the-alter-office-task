@@ -9,7 +9,7 @@ import { addTask, changeStatus, fetchTasks, taskDelete } from "../services/taskS
 import { Section, Task } from '../types'
 import EditModal from "./EditModal";
 
-function List({ categoryValue, searchValue, taskValue }: any) {
+function List({ categoryValue, searchValue, taskValue ,dueValue}: any) {
 
     const storedUserId = localStorage.getItem('userId');
     const [searchText, setSearchText] = useState('');
@@ -17,8 +17,12 @@ function List({ categoryValue, searchValue, taskValue }: any) {
     const [dropdownValue, setDropdownValue] = useState("");
     const [openSections, setOpenSections] = useState<string[]>([]);
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
+    const [overDue, setOverview] = useState<Task[]>([]);
+    const [thisWeek, setThisweek] = useState<Task[]>([]);
+    const [todaysTask, setTodaysTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [editTaskValue, setEditTaskValue] = useState('');
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc"); // Track sorting order
 
     const sections: Section[] = [
         { title: "todo", color: "#FAC3FF" },
@@ -32,10 +36,22 @@ function List({ categoryValue, searchValue, taskValue }: any) {
             const response = await fetchTasks(storedUserId);
             setTasks(response);
             setOriginalTasks(response)
+            setTodaysTasks(response)
+            setOverview(response)
+            setThisweek(response)
+
         })();
     }, [storedUserId]);
 
-
+    const handleSortByDate = () => {
+        const sortedTasks = [...tasks].sort((a, b) => {
+            const dateA = new Date(a.dueDate).getTime();
+            const dateB = new Date(b.dueDate).getTime();
+            return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+        });
+        setTasks(sortedTasks);
+        setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+    };
     const toggleSection = (sectionTitle: string) => {
         console.log("Toggling section: ", sectionTitle);
         console.log("Current open sections: ", openSections);
@@ -140,18 +156,78 @@ function List({ categoryValue, searchValue, taskValue }: any) {
     }, [taskValue]);
 
 
+useEffect(() => {
+    if (!dueValue) return;
+
+    (async () => {
+        console.log(dueValue);
+        const currentDate = new Date();
+
+        let filteredTasks;
+
+        if (dueValue === 'all') {
+            filteredTasks = originalTasks; 
+        } else {
+            switch (dueValue) {
+                case 'today':
+                    filteredTasks = todaysTask.filter(task => {
+                        const taskDueDate = new Date(task.dueDate);
+                        return taskDueDate.toDateString() === currentDate.toDateString(); // Tasks due today
+                    });
+                    break;
+
+                case 'overdue':
+                    filteredTasks = overDue.filter(task => {
+                        const taskDueDate = new Date(task.dueDate);
+                        return taskDueDate < currentDate; // Tasks that are overdue
+                    });
+                    break;
+
+                case 'thisweek':
+                    filteredTasks = thisWeek.filter(task => {
+                        const taskDueDate = new Date(task.dueDate);
+                        const startOfWeek = new Date(currentDate);
+                        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Set to Sunday of the current week
+                        const endOfWeek = new Date(startOfWeek);
+                        endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Saturday of the current week
+                        return taskDueDate >= startOfWeek && taskDueDate <= endOfWeek; // Tasks due within this week
+                    });
+                    break;
+
+                default:
+                    filteredTasks = tasks; // Default to all tasks if no valid dueValue
+            }
+        }
+
+        // Set the filtered tasks
+        setTasks(filteredTasks);
+
+    })();
+}, [dueValue]);
+
+    
+    
+
+
 
     return (
         <>
             <div className="mx-4 border-b border-gray-300"></div>
             <div className="flex mx-4 mb-0 text-gray-500">
                 <span className="font-bold w-1/5">Task</span>
-                <span className="font-bold flex items-center w-1/5 justify-center">
+                <span
+                    className="font-bold flex items-center w-1/5 justify-center cursor-pointer"
+                    onClick={handleSortByDate}
+                >
                     Due
-                    <FaSort className="ml-2 text-gray-500" />
+                    <FaSort
+                        className={`ml-2 text-gray-500 transform ${
+                            sortOrder === "asc" ? "rotate-180" : "rotate-0"
+                        }`}
+                    />
                 </span>
-                <span className="font-bold w-1/5  text-center">Status</span>
-                <span className="font-bold w-1/5  text-center">Category</span>
+                <span className="font-bold w-1/5 text-center">Status</span>
+                <span className="font-bold w-1/5 text-center">Category</span>
                 <span className="font-bold w-1/5"></span>
             </div>
             <main className="p-4">
@@ -166,10 +242,11 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                 {section.title} ({filterTasksByStatus(section.title).length})
                             </span>
                             <div
-                                className={`w-3 h-3 border-t-2 border-r-2 transform ${openSections.includes(section.title)
-                                    ? "rotate-180"
-                                    : "-rotate-45"
-                                    }`}
+                                className={`w-3 h-3 border-t-2 border-r-2 transform ${
+                                    openSections.includes(section.title)
+                                        ? "rotate-180"
+                                        : "-rotate-45"
+                                }`}
                                 style={{ borderColor: "black" }}
                             ></div>
                         </div>

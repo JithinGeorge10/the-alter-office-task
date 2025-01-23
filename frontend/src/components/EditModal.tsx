@@ -84,7 +84,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
                 const updatedTask = editedResponse?.data;
     
                 if (updatedTask) {
-                    // Update both states with the edited task
+
                     setTasksValue((prevTasks: Task[]) => 
                         prevTasks.map(task => task._id === updatedTask._id ? updatedTask : task)
                     );

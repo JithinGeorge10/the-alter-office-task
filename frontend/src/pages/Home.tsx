@@ -28,6 +28,7 @@ function Home() {
   }, [userToken]);
 
   const [filterCategory, setFilterCategory] = useState('');
+  const [dueCategory, setDueCategory] = useState('');
   const [searchTitle, setSearchTitle] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -43,7 +44,9 @@ function Home() {
   const handleFilterCategory = (e:any) => {
     setFilterCategory(e.target.value);
   };
-
+  const   handleDueCategory = (e:any) => {
+    setDueCategory(e.target.value);
+  };
   const handleAddTaskClick = () => {
     setIsModalOpen(true);
   };
@@ -98,8 +101,12 @@ function Home() {
               <option value="clearfilter">Clear Filter</option>
             </select>
 
-            <select className="border rounded-full px-3 py-1 text-gray-500">
-              <option value="">Due Date</option>
+            <select onChange={handleDueCategory} className="border rounded-full px-3 py-1 text-gray-500">
+              <option selected disabled value="">Due Date</option>
+              <option value="all">All</option>
+              <option value="today">Today</option>
+              <option value="thisweek">This week</option>
+              <option value="overdue">Overdue</option>
             </select>
           </div>
           <div className="flex flex-wrap gap-4">
@@ -127,7 +134,7 @@ function Home() {
           <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} />
         )}
         {activeView === 'list' ? (
-          <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} />
+          <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} />
         ) : (
           <Board />
         )}
