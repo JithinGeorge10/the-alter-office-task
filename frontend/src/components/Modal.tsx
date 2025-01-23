@@ -48,6 +48,8 @@ function Modal({ modalValue ,addTaskValue}: any) {
             setFile(uploadedFile);
         }
     };
+
+    
     const handleSubmit = () => {
         (async () => {
             if (!taskName || !text || !date || !status || !category || !storedUserId) {
@@ -65,6 +67,8 @@ function Modal({ modalValue ,addTaskValue}: any) {
             navigate('/')
         })()
     }
+
+
     return (
         <>
             <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">

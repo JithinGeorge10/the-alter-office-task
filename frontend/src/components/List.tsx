@@ -7,11 +7,10 @@ import {
 } from "react-icons/fa";
 import { addTask, changeStatus, fetchTasks, taskDelete } from "../services/taskService";
 import { Section, Task } from '../types'
-import Modal from "./Modal";
 import EditModal from "./EditModal";
 
 function List({ categoryValue, searchValue, taskValue }: any) {
-    console.log(categoryValue)
+
     const storedUserId = localStorage.getItem('userId');
     const [searchText, setSearchText] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,6 +19,7 @@ function List({ categoryValue, searchValue, taskValue }: any) {
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [editTaskValue, setEditTaskValue] = useState('');
+
     const sections: Section[] = [
         { title: "todo", color: "#FAC3FF" },
         { title: "inprogress", color: "#85D9F1" },
@@ -273,7 +273,7 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                                     );
                                                 })}
                                                 {isModalOpen && (
-                                                    <EditModal modalValue={setIsModalOpen}  editValue={editTaskValue} />
+                                                    <EditModal modalValue={setIsModalOpen}  editValue={editTaskValue} setTasksValue={setTasks} setOriginalTasks={setOriginalTasks}/>
                                                 )}
                                             </tbody>
                                         </table>

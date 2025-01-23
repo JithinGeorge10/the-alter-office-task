@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { FaBold, FaItalic, FaListOl, FaListUl, FaTimes } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { singleUsertask } from "../services/taskService";
+import { editTasks, singleUsertask } from "../services/taskService";
 import { Task } from "../types";
 
-function EditModal({ modalValue, addTaskValue, editValue }: any) {
+function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: any) {
 
     const storedUserId = localStorage.getItem("userId");
-    const navigate = useNavigate();
-
     const [taskName, setTaskName] = useState("");
     const [text, setText] = useState("");
     const [file, setFile] = useState(null);
@@ -16,14 +13,15 @@ function EditModal({ modalValue, addTaskValue, editValue }: any) {
     const [date, setDate] = useState("");
     const [status, setStatus] = useState("");
     const [tasks, setTasks] = useState<Task | null>(null);
+
     const maxLength = 3000;
 
-    // Dummy activity log data
-    const dummyActivities = [
-        { activity: "You created this task", time: "Dec 27 at 1:15pm" },
-        { activity: "Task updated", time: "Dec 28 at 9:00am" },
-        { activity: "Comment added", time: "Dec 28 at 10:30am" },
-    ];
+    // // Dummy activity log data
+    // const dummyActivities = [
+    //     { activity: "You created this task", time: "Dec 27 at 1:15pm" },
+    //     { activity: "Task updated", time: "Dec 28 at 9:00am" },
+    //     { activity: "Comment added", time: "Dec 28 at 10:30am" },
+    // ];
 
     const closeModal = () => {
         setTaskName("");
@@ -65,24 +63,45 @@ function EditModal({ modalValue, addTaskValue, editValue }: any) {
             setFile(uploadedFile);
         }
     };
-
     const handleSubmit = () => {
         (async () => {
             if (!taskName || !text || !date || !status || !category || !storedUserId) {
                 alert("Please fill in all the required fields.");
                 return;
             }
-            addTaskValue({ taskName, text, date, status, category, storedUserId });
-            setTaskName("");
-            setText("");
-            setFile(null);
-            setCategory("");
-            setDate("");
-            setStatus("");
-            modalValue(false);
-            navigate("/");
+    
+            try {
+                const editedResponse = await editTasks(
+                    taskName,
+                    text,
+                    date,
+                    status,
+                    category,
+                    storedUserId,
+                    editValue
+                );
+    
+                const updatedTask = editedResponse?.data;
+    
+                if (updatedTask) {
+                    // Update both states with the edited task
+                    setTasksValue((prevTasks: Task[]) => 
+                        prevTasks.map(task => task._id === updatedTask._id ? updatedTask : task)
+                    );
+    
+                    setOriginalTasks((prevOriginalTasks: Task[]) => 
+                        prevOriginalTasks.map(task => task._id === updatedTask._id ? updatedTask : task)
+                    );
+                }
+            } catch (error) {
+                console.error("Error while editing the task:", error);
+            } finally {
+                modalValue(false);
+            }
         })();
     };
+    
+
     useEffect(() => {
         (async () => {
             const response = await singleUsertask(editValue)
@@ -95,19 +114,6 @@ function EditModal({ modalValue, addTaskValue, editValue }: any) {
         })()
     }, [editValue])
 
-    
-const formatDate = (date: Date | string) => {
-  const fullDate = new Date(date);
-  
-  const day = fullDate.getDate();
-  const month = fullDate.toLocaleString('default', { month: 'short' }); 
-  const year = fullDate.getFullYear();
-
-  const formattedDate = `${day} ${month}, ${year}`;
-  console.log(formattedDate);
-  return formattedDate
-};
-    
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
@@ -126,13 +132,14 @@ const formatDate = (date: Date | string) => {
                             type="text"
                             onChange={handleTaskName}
                             value={taskName}
+
                             placeholder="Task Title"
-                            className="w-full border rounded p-2 mb-2"
+                            className="w-full border rounded p-2 mb-2 bg-gray-200"
                         />
                         <div className="relative w-full border rounded p-2 h-40 mb-2">
                             <textarea
                                 placeholder="Description"
-                                className="w-full h-full p-2 resize-none focus:outline-none"
+                                className="w-full h-full bg-gray-200 p-2 resize-none focus:outline-none"
                                 value={text}
                                 onChange={handleChange}
                                 maxLength={maxLength}
@@ -156,17 +163,19 @@ const formatDate = (date: Date | string) => {
                                         onClick={handleCategory}
                                         value="work"
                                         className={`px-4 py-1 border rounded-full ${category === "work"
-                                            ? "bg-blue-500 text-white"
+                                            ? "bg-[#7B1984] text-white"
                                             : "bg-transparent text-black"
                                             }`}
                                     >
                                         Work
                                     </button>
+
                                     <button
                                         onClick={handleCategory}
                                         value="personal"
+
                                         className={`px-4 py-1 border rounded-full ${category === "personal"
-                                            ? "bg-blue-500 text-white"
+                                            ? "bg-[#7B1984] text-white"
                                             : "bg-transparent text-black"
                                             }`}
                                     >
@@ -174,13 +183,13 @@ const formatDate = (date: Date | string) => {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm text-gray-500">Due on*</span>
 
                                 <input
                                     onChange={handleDate}
-                                    value={date ? date.toString().split('T')[0] : ''} // Format the date for input type="date"
+                                    value={date ? date.toString().split('T')[0] : ''}
                                     type="date"
                                     className="border rounded p-1"
                                 />
@@ -236,7 +245,7 @@ const formatDate = (date: Date | string) => {
                                 className="px-6 py-2 text-sm text-white rounded-full"
                                 style={{ backgroundColor: "#7B1984" }}
                             >
-                                Create
+                                Update
                             </button>
                         </div>
                     </div>
