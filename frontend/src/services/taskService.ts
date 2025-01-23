@@ -58,3 +58,19 @@ export const changeStatus = async (status:any,userId:any) => {
         console.error("Error fetching tasks:", error);
     }
 };
+
+
+
+export const taskDelete = async (taskId:any) => {
+    try {
+        const response= await axios.post(`${import.meta.env.VITE_AUTH_SERVICE_URL}/delete-task`, {taskId:taskId}, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            withCredentials: true,
+        });
+        return response
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+    }
+};

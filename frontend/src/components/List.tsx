@@ -5,14 +5,14 @@ import {
     FaCheckCircle
 
 } from "react-icons/fa";
-import { addTask, changeStatus, fetchTasks } from "../services/taskService";
+import { addTask, changeStatus, fetchTasks, taskDelete } from "../services/taskService";
 import { Section, Task } from '../types'
 
 function List({ categoryValue, searchValue, taskValue }: any) {
     console.log(categoryValue)
     const storedUserId = localStorage.getItem('userId');
     const [searchText, setSearchText] = useState('');
-
+    const [dropdownValue, setDropdownValue] = useState("");
     const [openSections, setOpenSections] = useState<string[]>([]);
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -67,7 +67,20 @@ function List({ categoryValue, searchValue, taskValue }: any) {
             console.error("Failed to change status:", error);
         }
     };
-
+    const handleEdit = (e:  React.ChangeEvent<HTMLSelectElement>, _id: string) => {
+       (async()=>{
+        const taskId=_id
+        const action=e.target.value
+        if(action==='delete'){
+            await taskDelete(taskId)
+            setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+            setOriginalTasks((prevOriginalTasks) =>
+              prevOriginalTasks.filter((task) => task._id !== taskId)
+            );
+            setDropdownValue("");
+        }
+       })()
+    }
 
     useEffect(() => {
         const filterKey = categoryValue;
@@ -126,7 +139,7 @@ function List({ categoryValue, searchValue, taskValue }: any) {
             <div className="mx-4 border-b border-gray-300"></div>
             <div className="flex mx-4 mb-0 text-gray-500">
                 <span className="font-bold w-1/5">Task</span>
-                <span className="font-bold flex items-center w-2/5 justify-center">
+                <span className="font-bold flex items-center w-1/5 justify-center">
                     Due
                     <FaSort className="ml-2 text-gray-500" />
                 </span>
@@ -191,14 +204,14 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                                                 <FaBars className="mr-2 hidden md:inline-block" />
                                                                 <FaCheckCircle
                                                                     className={`mr-2 ${task.status === "completed"
-                                                                            ? "text-green-500"
-                                                                            : "text-gray-400"
+                                                                        ? "text-green-500"
+                                                                        : "text-gray-400"
                                                                         }`}
                                                                 />
                                                                 <span
                                                                     className={`${task.status === "completed"
-                                                                            ? "line-through text-black-500"
-                                                                            : ""
+                                                                        ? "line-through text-black-500"
+                                                                        : ""
                                                                         }`}
                                                                 >
                                                                     {task.title}
@@ -230,7 +243,23 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                                             <td className="py-3 px-3 w-1/4">
                                                                 {task.category}
                                                             </td>
-                                                            <td className="text-lg font-bold">...</td>
+                                                            <td>
+                                                                <select
+                                                                 value={dropdownValue}
+                                                                    onChange={(e) =>
+                                                                        handleEdit(e,task._id)
+                                                                    }
+                                                                    className="appearance-none bg-gray-100 font-bold  rounded-lg py-2 px-4 pr-10"
+                                                                >
+                                                                    <option selected disabled value="">...</option>
+                                                                    <option value="edit">
+                                                                        Edit
+                                                                    </option>
+                                                                    <option value="delete">
+                                                                        Delete
+                                                                    </option>
+                                                                </select>
+                                                            </td>
                                                         </tr>
                                                     );
                                                 })}
