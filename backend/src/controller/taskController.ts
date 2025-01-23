@@ -104,3 +104,22 @@ export const deleteTask = async (req, res) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+
+
+export const singleUserTask = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
+    }
+    const { taskId } = req.query;
+    const task = await Task.findOne({ _id: taskId, userId: req.userId });
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    return res.status(200).json(task);
+  } catch (error) {
+    console.error('Error fetching task:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

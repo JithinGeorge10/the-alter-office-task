@@ -32,7 +32,7 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [taskDetails, setTaskDetails] = useState({});
-  const [activeView, setActiveView] = useState('list'); // New state to track view
+  const [activeView, setActiveView] = useState('list'); 
 
   const handleSearchChange = (e:any) => {
     const searchKey = e.target.value;

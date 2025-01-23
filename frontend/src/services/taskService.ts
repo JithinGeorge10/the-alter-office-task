@@ -74,3 +74,25 @@ export const taskDelete = async (taskId:any) => {
         console.error("Error fetching tasks:", error);
     }
 };
+
+
+export const singleUsertask = async (taskId:any) => {
+    try {
+        const response = await axios.get(
+            `${import.meta.env.VITE_AUTH_SERVICE_URL}/singleUser-task`,
+            {
+                params: { taskId }, 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+            }
+        );
+        console.log(response.data); 
+
+        return response.data
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+    }
+};
+

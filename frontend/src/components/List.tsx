@@ -7,15 +7,19 @@ import {
 } from "react-icons/fa";
 import { addTask, changeStatus, fetchTasks, taskDelete } from "../services/taskService";
 import { Section, Task } from '../types'
+import Modal from "./Modal";
+import EditModal from "./EditModal";
 
 function List({ categoryValue, searchValue, taskValue }: any) {
     console.log(categoryValue)
     const storedUserId = localStorage.getItem('userId');
     const [searchText, setSearchText] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [dropdownValue, setDropdownValue] = useState("");
     const [openSections, setOpenSections] = useState<string[]>([]);
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [editTaskValue, setEditTaskValue] = useState('');
     const sections: Section[] = [
         { title: "todo", color: "#FAC3FF" },
         { title: "inprogress", color: "#85D9F1" },
@@ -67,19 +71,22 @@ function List({ categoryValue, searchValue, taskValue }: any) {
             console.error("Failed to change status:", error);
         }
     };
-    const handleEdit = (e:  React.ChangeEvent<HTMLSelectElement>, _id: string) => {
-       (async()=>{
-        const taskId=_id
-        const action=e.target.value
-        if(action==='delete'){
-            await taskDelete(taskId)
-            setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
-            setOriginalTasks((prevOriginalTasks) =>
-              prevOriginalTasks.filter((task) => task._id !== taskId)
-            );
-            setDropdownValue("");
-        }
-       })()
+    const handleEdit = (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
+        (async () => {
+            const taskId = _id
+            const action = e.target.value
+            if (action === 'delete') {
+                await taskDelete(taskId)
+                setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+                setOriginalTasks((prevOriginalTasks) =>
+                    prevOriginalTasks.filter((task) => task._id !== taskId)
+                );
+                setDropdownValue("");
+            } else {
+                setEditTaskValue(taskId);
+                setIsModalOpen(true);
+            }
+        })()
     }
 
     useEffect(() => {
@@ -220,7 +227,7 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                                             <td className="py-3 px-3 w-1/4 text-center">
                                                                 {formattedDate}
                                                             </td>
-                                                            <td className="py-3 px-3 w-1/4 text-center">
+                                                            <td className=" py-3 px-3 w-1/4 text-center">
                                                                 <select
                                                                     value={task.status}
                                                                     onChange={(e) =>
@@ -231,11 +238,11 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                                                     }
                                                                     className="appearance-none bg-gray-300 border rounded-lg py-2 px-4 pr-10"
                                                                 >
-                                                                    <option value="todo">Todo</option>
-                                                                    <option value="inprogress">
+                                                                    <option className="bg-gray-100" value="todo">Todo</option>
+                                                                    <option className="bg-gray-100" value="inprogress">
                                                                         In Progress
                                                                     </option>
-                                                                    <option value="completed">
+                                                                    <option className="bg-gray-100" value="completed">
                                                                         Complete
                                                                     </option>
                                                                 </select>
@@ -245,24 +252,29 @@ function List({ categoryValue, searchValue, taskValue }: any) {
                                                             </td>
                                                             <td>
                                                                 <select
-                                                                 value={dropdownValue}
+                                                                    value={dropdownValue}
                                                                     onChange={(e) =>
-                                                                        handleEdit(e,task._id)
+                                                                        handleEdit(e, task._id)
                                                                     }
                                                                     className="appearance-none bg-gray-100 font-bold  rounded-lg py-2 px-4 pr-10"
                                                                 >
                                                                     <option selected disabled value="">...</option>
-                                                                    <option value="edit">
+                                                                    <option className="bg-gray-100" value="edit">
                                                                         Edit
                                                                     </option>
-                                                                    <option value="delete">
+                                                                    <option className="bg-gray-100" value="delete">
                                                                         Delete
                                                                     </option>
                                                                 </select>
                                                             </td>
+
+
                                                         </tr>
                                                     );
                                                 })}
+                                                {isModalOpen && (
+                                                    <EditModal modalValue={setIsModalOpen}  editValue={editTaskValue} />
+                                                )}
                                             </tbody>
                                         </table>
                                     )}
