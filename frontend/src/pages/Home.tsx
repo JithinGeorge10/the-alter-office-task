@@ -8,7 +8,7 @@ import {
 import Navbar from "../components/Navbar";
 import List from "../components/List";
 import Modal from "../components/Modal";
-import Board from "../components/Board"; 
+import Board from "../components/Board";
 
 function Home() {
   const location = useLocation();
@@ -18,7 +18,7 @@ function Home() {
       localStorage.setItem('userId', userId);
     }
   }, [userId]);
-  
+
   const navigate = useNavigate();
   let userToken = Cookies.get('jwt');
   useEffect(() => {
@@ -33,18 +33,18 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [taskDetails, setTaskDetails] = useState({});
-  const [activeView, setActiveView] = useState('list'); 
+  const [activeView, setActiveView] = useState('list');
 
-  const handleSearchChange = (e:any) => {
+  const handleSearchChange = (e: any) => {
     const searchKey = e.target.value;
     setSearchTitle(searchKey);
     setSearchText(searchKey);
   };
 
-  const handleFilterCategory = (e:any) => {
+  const handleFilterCategory = (e: any) => {
     setFilterCategory(e.target.value);
   };
-  const   handleDueCategory = (e:any) => {
+  const handleDueCategory = (e: any) => {
     setDueCategory(e.target.value);
   };
   const handleAddTaskClick = () => {
@@ -96,17 +96,18 @@ function Home() {
             <h1 className="text-gray-500">Filter by:</h1>
             <select onChange={handleFilterCategory} className="border rounded-full px-3 py-1 text-gray-500">
               <option selected disabled value="">Category</option>
-              <option value="work">Work</option>
-              <option value="personal">Personal</option>
-              <option value="clearfilter">Clear Filter</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="work">Work</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="personal">Personal</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="clearfilter">Clear Filter</option>
             </select>
+
 
             <select onChange={handleDueCategory} className="border rounded-full px-3 py-1 text-gray-500">
               <option selected disabled value="">Due Date</option>
-              <option value="all">All</option>
-              <option value="today">Today</option>
-              <option value="thisweek">This week</option>
-              <option value="overdue">Overdue</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="all">All</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="today">Today</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="thisweek">This week</option>
+              <option className="bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="overdue">Overdue</option>
             </select>
           </div>
           <div className="flex flex-wrap gap-4">
@@ -136,7 +137,7 @@ function Home() {
         {activeView === 'list' ? (
           <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} />
         ) : (
-          <Board categoryValue={filterCategory} dueValue={dueCategory} searchValue={searchTitle} />
+          <Board categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetails} searchValue={searchTitle} />
         )}
       </div>
     </>

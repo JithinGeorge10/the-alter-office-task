@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { fetchTasks, taskDelete } from "../services/taskService";
+import { addTask, fetchTasks, taskDelete } from "../services/taskService";
+import { Draggable } from "react-drag-reorder";
 import { Task } from "../types";
 import EditModal from "./EditModal";
 
-function Board({ categoryValue, dueValue, searchValue }: any) {
+function Board({ categoryValue, dueValue, searchValue, taskValue }: any) {
     const storedUserId = localStorage.getItem('userId');
     const [overDue, setOverview] = useState<Task[]>([]);
     const [searchText, setSearchText] = useState('');
@@ -11,11 +12,27 @@ function Board({ categoryValue, dueValue, searchValue }: any) {
     const [todaysTask, setTodaysTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
-    const [showDropdown, setShowDropdown] = useState<string | null>(null);
     const [dropdownValue, setDropdownValue] = useState("");
     const [editTaskValue, setEditTaskValue] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    useEffect(() => {
+        if (!taskValue) return;
+        (async () => {
+            const { taskName, text, date, status, category, storedUserId } = taskValue
+            const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
+            console.log(newTaskResponse)
+            setTasks((prevTasks) => {
+                if (newTaskResponse && newTaskResponse.data.task) {
+                    const newTask = newTaskResponse.data.task as Task;
+                    return [...prevTasks, newTask];
+                }
+                console.error("Invalid task response", newTaskResponse);
+                return prevTasks;
+            });
+
+        })();
+    }, [taskValue]);
     useEffect(() => {
         const searchKey = searchValue
         console.log(searchKey)
@@ -90,19 +107,6 @@ function Board({ categoryValue, dueValue, searchValue }: any) {
                 </div>
             );
         }
-        // const toggleDropdown = (taskId: string) => {
-        //     setShowDropdown((prev) => (prev === taskId ? null : taskId));
-        // };
-
-        // const handleEdit = (e: unknown, taskId: string) => {
-        //     console.log(`Edit task with ID: ${taskId}`);
-        //     setShowDropdown(null); // Close dropdown
-        // };
-
-        // const handleDelete = (taskId: string) => {
-        //     console.log(`Delete task with ID: ${taskId}`);
-        //     setShowDropdown(null); // Close dropdown
-        // };
 
         const handleEdit = (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
             (async () => {
@@ -122,6 +126,7 @@ function Board({ categoryValue, dueValue, searchValue }: any) {
             })()
         }
         return taskList.map((task) => (
+
             <div
                 key={task._id}
                 className="bg-white p-4 rounded-md shadow-sm flex flex-col h-full relative"
@@ -138,10 +143,10 @@ function Board({ categoryValue, dueValue, searchValue }: any) {
                             <option selected disabled value="" className="text-gray-500 text-right">
                                 ...
                             </option>
-                            <option className="bg-gray-100" value="edit">
+                            <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="edit">
                                 Edit
                             </option>
-                            <option className="bg-gray-100" value="delete">
+                            <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="delete">
                                 Delete
                             </option>
                         </select>
@@ -215,6 +220,7 @@ function Board({ categoryValue, dueValue, searchValue }: any) {
                         TO-DO
                     </h2>
                     <div className="space-y-4">
+
                         {renderTaskList(tasks.filter(task => task.status === 'todo'), ['TO-DO'])}
                     </div>
                 </div>

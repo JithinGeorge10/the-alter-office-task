@@ -353,11 +353,12 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                                                                     }
                                                                     className="appearance-none bg-gray-300 border rounded-lg py-2 px-4 pr-10"
                                                                 >
-                                                                    <option className="bg-gray-100" value="todo">Todo</option>
-                                                                    <option className="bg-gray-100" value="inprogress">
+                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="todo">Todo</option>
+                                                        
+                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="inprogress">
                                                                         In Progress
                                                                     </option>
-                                                                    <option className="bg-gray-100" value="completed">
+                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="completed">
                                                                         Complete
                                                                     </option>
                                                                 </select>
@@ -374,10 +375,10 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                                                                     className="appearance-none bg-gray-100 font-bold  rounded-lg py-2 px-4 pr-10"
                                                                 >
                                                                     <option selected disabled value="">...</option>
-                                                                    <option className="bg-gray-100" value="edit">
+                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="edit">
                                                                         Edit
                                                                     </option>
-                                                                    <option className="bg-gray-100" value="delete">
+                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="delete">
                                                                         Delete
                                                                     </option>
                                                                 </select>
