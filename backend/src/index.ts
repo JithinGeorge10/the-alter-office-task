@@ -9,11 +9,11 @@ import taskRoutes from './routes/taskRoutes';
 const app = express()
 dotenv.config()
 
-const corsOptions = {
-    origin: 'task-management-pi-three.vercel.app',
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    credentials: true
-};
+    const corsOptions = {
+        origin: '*',
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+        credentials: true
+    };
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
