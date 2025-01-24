@@ -109,6 +109,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
     }
 
     useEffect(() => {
+        console.log(categoryValue)
         const filterKey = categoryValue;
         if (!filterKey || filterKey === 'Category') {
             return;
@@ -407,8 +408,8 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                     <select
                         className="px-2 py-1 border rounded-full"
                         style={{
-                            backgroundColor: "#8D8A8A24", // Light transparent gray background for the main select box
-                            color: "white", // White text for the main select box
+                            backgroundColor: "#8D8A8A24", 
+                            color: "white", 
                         }}
                         onChange={(e) => handleBulkStatusChange(e.target.value)}
                     >
