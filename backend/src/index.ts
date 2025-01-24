@@ -12,7 +12,9 @@ dotenv.config()
     const corsOptions = {
         origin: '*',
         methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization'], // Include any custom headers
+
     };
 
 app.use(cors(corsOptions));
