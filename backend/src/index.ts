@@ -10,7 +10,7 @@ const app = express()
 dotenv.config()
 
 const corsOptions = {
-    origin:'http://localhost:5173',
+    origin:process.env.CLIENT,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
     credentials: true
 };
@@ -23,7 +23,7 @@ app.use(authRoutes)
 app.use(taskRoutes)
 
 
-app.listen(5000, () => {
+app.listen(process.env.PORT, () => {
     console.log(`Server started`)
 })
 const databaseurl =process.env.DATABASE_URL
