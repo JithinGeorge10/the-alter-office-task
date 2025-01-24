@@ -19,7 +19,6 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(morgan("dev"));
-app.use('backend')
 app.use(authRoutes)
 app.use(taskRoutes)
 
