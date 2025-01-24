@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchTasks } from "../services/taskService";
 import { Task } from "../types";
 
-function Board({ categoryValue }: any) {
+function Board({ categoryValue,dueValue }: any) {
     const storedUserId = localStorage.getItem('userId');
     const [overDue, setOverview] = useState<Task[]>([]);
     const [thisWeek, setThisweek] = useState<Task[]>([]);
@@ -82,7 +82,56 @@ function Board({ categoryValue }: any) {
         ));
     };
 
-
+    useEffect(() => {
+        if (!dueValue) return;
+    
+        (async () => {
+            console.log(dueValue);
+            const currentDate = new Date();
+            let filteredTasks;
+    
+            if (dueValue === 'all') {
+                filteredTasks = originalTasks;
+            } else {
+                switch (dueValue) {
+                    case 'today':
+                        filteredTasks = todaysTask.filter(task => {
+                            const taskDueDate = new Date(task.dueDate);
+                            taskDueDate.setHours(0, 0, 0, 0);
+                            currentDate.setHours(0, 0, 0, 0);
+                            return taskDueDate.getTime() === currentDate.getTime();
+                        });
+                        break;
+    
+                    case 'overdue':
+                        filteredTasks = overDue.filter(task => {
+                            const taskDueDate = new Date(task.dueDate);
+                            return taskDueDate < currentDate;
+                        });
+                        break;
+    
+                    case 'thisweek':
+                        filteredTasks = thisWeek.filter(task => {
+                            const taskDueDate = new Date(task.dueDate);
+                            const startOfWeek = new Date(currentDate);
+                            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+                            startOfWeek.setHours(0, 0, 0, 0);
+                            const endOfWeek = new Date(startOfWeek);
+                            endOfWeek.setDate(startOfWeek.getDate() + 6);
+                            endOfWeek.setHours(23, 59, 59, 999);
+                            return taskDueDate >= startOfWeek && taskDueDate <= endOfWeek;
+                        });
+                        break;
+    
+                    default:
+                        filteredTasks = tasks;
+                }
+            }
+    
+            setTasks(filteredTasks);
+        })();
+    }, [dueValue]);
+    
     return (
         <div className="min-h-screen bg-white px-4 py-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
