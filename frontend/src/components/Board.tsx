@@ -33,6 +33,7 @@ function Board({ categoryValue, dueValue, searchValue, taskValue }: any) {
 
         })();
     }, [taskValue]);
+    
     useEffect(() => {
         const searchKey = searchValue
         console.log(searchKey)

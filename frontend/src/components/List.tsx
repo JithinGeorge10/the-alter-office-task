@@ -155,7 +155,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                 console.error("Invalid task response", newTaskResponse);
                 return prevTasks;
             });
-
         })();
     }, [taskValue]);
 

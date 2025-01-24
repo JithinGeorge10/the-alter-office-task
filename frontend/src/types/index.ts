@@ -5,6 +5,7 @@ export interface Section {
   }
   
   export interface Task {
+    taskName: any;
     id: any;
     _id: string;
     title: string;

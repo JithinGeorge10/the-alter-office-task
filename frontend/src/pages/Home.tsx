@@ -33,6 +33,7 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [taskDetails, setTaskDetails] = useState({});
+  const [taskDetailsBoard, setTaskDetailsBoard] = useState({});
   const [activeView, setActiveView] = useState('list');
 
   const handleSearchChange = (e: any) => {
@@ -132,12 +133,12 @@ function Home() {
         </div>
 
         {isModalOpen && (
-          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} />
+          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} addTaskValueBoard={setTaskDetailsBoard} />
         )}
         {activeView === 'list' ? (
           <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} />
         ) : (
-          <Board categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetails} searchValue={searchTitle} />
+          <Board categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetailsBoard} searchValue={searchTitle} />
         )}
       </div>
     </>
