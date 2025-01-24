@@ -10,7 +10,7 @@ const app = express()
 dotenv.config()
 
 const corsOptions = {
-    origin:process.env.CLIENT,
+    origin: 'task-management-pi-three.vercel.app',
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
     credentials: true
 };
