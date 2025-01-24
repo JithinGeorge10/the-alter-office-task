@@ -118,7 +118,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg w-full max-w-4xl flex gap-6">
-                {/* Task Form */}
+    
                 <div className="w-3/4">
                     <div className="flex justify-between">
                         <h2 className="text-xl font-bold"></h2>

@@ -85,7 +85,7 @@ function Modal({ modalValue ,addTaskValue}: any) {
                             type="text"
                             onChange={handleTaskName}
                             placeholder="Task Title"
-                            className="w-full border rounded p-2 mb-2"
+                              className="w-full border rounded p-2 mb-2 bg-gray-200"
                         />
                         <div className="relative w-full border rounded p-2 h-40 mb-2">
                             <textarea

@@ -7,7 +7,7 @@ import {
     FaCheckCircle
 
 } from "react-icons/fa";
-import { addTask, changeStatus, deleteBatch, fetchTasks, taskDelete } from "../services/taskService";
+import { addTask, changeStatus, deleteBatch, fetchTasks, statusChangeBatch, taskDelete } from "../services/taskService";
 import { Section, Task } from '../types'
 import EditModal from "./EditModal";
 
@@ -219,7 +219,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
     const handleDeleteSelected = () => {
        (async()=>{
         const taskArray = Array.from(selectedTasks)
-        const deleteBatchTask = await deleteBatch(taskArray)
+        await deleteBatch(taskArray)
         setTasks((prev) =>
             prev.filter((task) => !selectedTasks.has(task._id))
         );
@@ -228,11 +228,18 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
     };
 
     const handleBulkStatusChange = (status: string) => {
+       (async()=>{
+        console.log(selectedTasks)
+        console.log(status)
+        const taskArray = Array.from(selectedTasks)
+        const taskStatus=status
+        await statusChangeBatch(taskArray,taskStatus)
         setTasks((prev) =>
             prev.map((task) =>
                 selectedTasks.has(task._id) ? { ...task, status } : task
             )
         );
+       })()
     };
 
 

@@ -154,24 +154,62 @@ export const editTask = async (req, res) => {
 
 
 
+
 export const deleteBatchTask = async (req, res) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
     }
-    const { taskArray } = req.body; 
+    console.log('rreach');
+  
+    const { taskArray } = req.body;
 
     if (!taskArray || taskArray.length === 0) {
       return res.status(400).json({ message: 'No task IDs provided' });
     }
+
+
     const result = await Task.deleteMany({ _id: { $in: taskArray } });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'No tasks found to delete' });
     }
+
     return res.status(200).json({ message: `${result.deletedCount} task(s) deleted successfully` });
   } catch (error) {
     console.error('Error deleting tasks:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+
+
+
+export const batchStatusChange = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
+    }
+
+    const { taskArray, taskStatus } = req.body;
+    if (!taskArray || !taskStatus) {
+      return res.status(400).json({ message: 'Bad Request: taskArray and taskStatus are required' });
+    }
+
+    const result = await Task.updateMany(
+      { _id: { $in: taskArray } },
+      { $set: { status: taskStatus } }
+    );
+
+    if (result.nModified > 0) {
+      return res.status(200).json({ message: 'Tasks status updated successfully' });
+    } else {
+      return res.status(404).json({ message: 'No tasks found or status unchanged' });
+    }
+
+  } catch (error) {
+    console.error('Error updating tasks:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+

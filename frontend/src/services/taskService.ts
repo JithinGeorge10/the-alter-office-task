@@ -110,10 +110,30 @@ export const editTasks = async (taskName: any, text: string, date: string, statu
         console.error("Error fetching tasks:", error);
     }
 };
-
 export const deleteBatch = async (taskArray: string[]) => {
     try {
-        const response= await axios.put(`${import.meta.env.VITE_AUTH_SERVICE_URL}/deleteBatch-task`, {taskArray}, {
+        const response = await axios.delete(
+            `${import.meta.env.VITE_AUTH_SERVICE_URL}/deleteBatch-task`,
+            {
+                data: { taskArray }, 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+            }
+        );
+        console.log(response);
+        return response;
+    } catch (error) {
+        console.error("Error deleting tasks:", error);
+    }
+};
+
+
+
+export const statusChangeBatch = async (taskArray: string[], taskStatus: string) => {
+    try {
+        const response= await axios.put(`${import.meta.env.VITE_AUTH_SERVICE_URL}/batchStatusChange-task`, {taskArray,taskStatus}, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -125,4 +145,3 @@ export const deleteBatch = async (taskArray: string[]) => {
         console.error("Error fetching tasks:", error);
     }
 };
-
