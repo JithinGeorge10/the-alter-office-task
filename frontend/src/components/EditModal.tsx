@@ -8,11 +8,11 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     const storedUserId = localStorage.getItem("userId");
     const [taskName, setTaskName] = useState("");
     const [text, setText] = useState("");
-    const [file, setFile] = useState(null);
+    const [_file, setFile] = useState(null);
     const [category, setCategory] = useState("");
     const [date, setDate] = useState("");
     const [status, setStatus] = useState("");
-    const [tasks, setTasks] = useState<Task | null>(null);
+    const [_tasks, setTasks] = useState<Task | null>(null);
 
     const maxLength = 3000;
 

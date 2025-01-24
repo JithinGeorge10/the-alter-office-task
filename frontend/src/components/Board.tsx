@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { addTask, fetchTasks, taskDelete } from "../services/taskService";
-import { Draggable } from "react-drag-reorder";
 import { Task } from "../types";
 import EditModal from "./EditModal";
 
 function Board({ categoryValue, dueValue, searchValue, taskValue }: any) {
     const storedUserId = localStorage.getItem('userId');
     const [overDue, setOverview] = useState<Task[]>([]);
-    const [searchText, setSearchText] = useState('');
+    const [_searchText, setSearchText] = useState('');
     const [thisWeek, setThisweek] = useState<Task[]>([]);
     const [todaysTask, setTodaysTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);

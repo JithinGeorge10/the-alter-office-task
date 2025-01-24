@@ -14,7 +14,7 @@ import EditModal from "./EditModal";
 function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
 
     const storedUserId = localStorage.getItem('userId');
-    const [searchText, setSearchText] = useState('');
+    const [_searchText, setSearchText] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [dropdownValue, setDropdownValue] = useState("");
     const [openSections, setOpenSections] = useState<string[]>([]);

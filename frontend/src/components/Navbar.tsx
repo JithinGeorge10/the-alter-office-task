@@ -33,7 +33,7 @@ function Navbar() {
                     alt="Profile Photo"
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                  <span className="ml-3 font-medium font-bold text-gray-600 text-sm">{storedDisplayName}</span>
+                  <span className="ml-3  font-bold text-gray-600 text-sm">{storedDisplayName}</span>
                 </div>
               </div>
             </header>

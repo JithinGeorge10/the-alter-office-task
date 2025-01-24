@@ -8,7 +8,7 @@ function Modal({ modalValue, addTaskValue,addTaskValueBoard }: any) {
     const navigate = useNavigate();
     const [taskName, setTaskName] = useState('')
     const [text, setText] = useState('');
-    const [file, setFile] = useState(null);
+    const [_file, setFile] = useState(null);
     const [category, setCategory] = useState('');
     const [date, setDate] = useState('');
     const [status, setStatus] = useState('');
