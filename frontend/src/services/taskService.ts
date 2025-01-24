@@ -98,8 +98,22 @@ export const singleUsertask = async (taskId:any) => {
 
 export const editTasks = async (taskName: any, text: string, date: string, status: string, category: string, storedUserId: string, editValue: any) => {
     try {
-        console.log(taskName, text, date, status, category, storedUserId, editValue)
         const response= await axios.patch(`${import.meta.env.VITE_AUTH_SERVICE_URL}/edit-task`, {userId:storedUserId,taskName:taskName,description:text,date:date,status:status,category:category,taskId:editValue}, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            withCredentials: true,
+        });
+        console.log(response)
+        return response
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+    }
+};
+
+export const deleteBatch = async (taskArray: string[]) => {
+    try {
+        const response= await axios.put(`${import.meta.env.VITE_AUTH_SERVICE_URL}/deleteBatch-task`, {taskArray}, {
             headers: {
                 "Content-Type": "application/json",
             },

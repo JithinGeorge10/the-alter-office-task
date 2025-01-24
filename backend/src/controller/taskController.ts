@@ -128,13 +128,16 @@ export const singleUserTask = async (req, res) => {
 
 export const editTask = async (req, res) => {
   try {
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
+    }
     const { taskId, userId, taskName, description, date, status, category } = req.body;
     console.log(taskId, userId, taskName, description, date, status, category)
- 
+
     const updatedTask = await Task.findOneAndUpdate(
-      { _id: taskId, userId: userId }, 
-      { title:taskName, description, dueDate:date, status, category }, 
-      { new: true } 
+      { _id: taskId, userId: userId },
+      { title: taskName, description, dueDate: date, status, category },
+      { new: true }
     );
 
     if (!updatedTask) {
@@ -145,6 +148,30 @@ export const editTask = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching task:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+export const deleteBatchTask = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
+    }
+    const { taskArray } = req.body; 
+
+    if (!taskArray || taskArray.length === 0) {
+      return res.status(400).json({ message: 'No task IDs provided' });
+    }
+    const result = await Task.deleteMany({ _id: { $in: taskArray } });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'No tasks found to delete' });
+    }
+    return res.status(200).json({ message: `${result.deletedCount} task(s) deleted successfully` });
+  } catch (error) {
+    console.error('Error deleting tasks:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };

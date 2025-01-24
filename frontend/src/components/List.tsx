@@ -1,3 +1,5 @@
+import React, { Component } from "react";
+
 import { useEffect, useState } from "react";
 import {
     FaSort,
@@ -5,11 +7,11 @@ import {
     FaCheckCircle
 
 } from "react-icons/fa";
-import { addTask, changeStatus, fetchTasks, taskDelete } from "../services/taskService";
+import { addTask, changeStatus, deleteBatch, fetchTasks, taskDelete } from "../services/taskService";
 import { Section, Task } from '../types'
 import EditModal from "./EditModal";
 
-function List({ categoryValue, searchValue, taskValue ,dueValue}: any) {
+function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
 
     const storedUserId = localStorage.getItem('userId');
     const [searchText, setSearchText] = useState('');
@@ -23,6 +25,7 @@ function List({ categoryValue, searchValue, taskValue ,dueValue}: any) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [editTaskValue, setEditTaskValue] = useState('');
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc"); // Track sorting order
+    const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
     const sections: Section[] = [
         { title: "todo", color: "#FAC3FF" },
@@ -156,57 +159,84 @@ function List({ categoryValue, searchValue, taskValue ,dueValue}: any) {
     }, [taskValue]);
 
 
-useEffect(() => {
-    if (!dueValue) return;
+    useEffect(() => {
+        if (!dueValue) return;
 
-    (async () => {
-        console.log(dueValue);
-        const currentDate = new Date();
+        (async () => {
+            console.log(dueValue);
+            const currentDate = new Date();
 
-        let filteredTasks;
+            let filteredTasks;
 
-        if (dueValue === 'all') {
-            filteredTasks = originalTasks; 
-        } else {
-            switch (dueValue) {
-                case 'today':
-                    filteredTasks = todaysTask.filter(task => {
-                        const taskDueDate = new Date(task.dueDate);
-                        return taskDueDate.toDateString() === currentDate.toDateString(); // Tasks due today
-                    });
-                    break;
+            if (dueValue === 'all') {
+                filteredTasks = originalTasks;
+            } else {
+                switch (dueValue) {
+                    case 'today':
+                        filteredTasks = todaysTask.filter(task => {
+                            const taskDueDate = new Date(task.dueDate);
+                            return taskDueDate.toDateString() === currentDate.toDateString(); // Tasks due today
+                        });
+                        break;
 
-                case 'overdue':
-                    filteredTasks = overDue.filter(task => {
-                        const taskDueDate = new Date(task.dueDate);
-                        return taskDueDate < currentDate; // Tasks that are overdue
-                    });
-                    break;
+                    case 'overdue':
+                        filteredTasks = overDue.filter(task => {
+                            const taskDueDate = new Date(task.dueDate);
+                            return taskDueDate < currentDate; // Tasks that are overdue
+                        });
+                        break;
 
-                case 'thisweek':
-                    filteredTasks = thisWeek.filter(task => {
-                        const taskDueDate = new Date(task.dueDate);
-                        const startOfWeek = new Date(currentDate);
-                        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Set to Sunday of the current week
-                        const endOfWeek = new Date(startOfWeek);
-                        endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Saturday of the current week
-                        return taskDueDate >= startOfWeek && taskDueDate <= endOfWeek; // Tasks due within this week
-                    });
-                    break;
+                    case 'thisweek':
+                        filteredTasks = thisWeek.filter(task => {
+                            const taskDueDate = new Date(task.dueDate);
+                            const startOfWeek = new Date(currentDate);
+                            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Set to Sunday of the current week
+                            const endOfWeek = new Date(startOfWeek);
+                            endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Saturday of the current week
+                            return taskDueDate >= startOfWeek && taskDueDate <= endOfWeek; // Tasks due within this week
+                        });
+                        break;
 
-                default:
-                    filteredTasks = tasks; // Default to all tasks if no valid dueValue
+                    default:
+                        filteredTasks = tasks; // Default to all tasks if no valid dueValue
+                }
             }
-        }
 
-        // Set the filtered tasks
-        setTasks(filteredTasks);
+            // Set the filtered tasks
+            setTasks(filteredTasks);
 
-    })();
-}, [dueValue]);
+        })();
+    }, [dueValue]);
 
-    
-    
+    const handleCheckboxChange = (taskId: string) => {
+        setSelectedTasks((prev) => {
+            const newSelected = new Set(prev);
+            newSelected.has(taskId) ? newSelected.delete(taskId) : newSelected.add(taskId);
+            return newSelected;
+        });
+    };
+
+    const handleDeleteSelected = () => {
+       (async()=>{
+        const taskArray = Array.from(selectedTasks)
+        const deleteBatchTask = await deleteBatch(taskArray)
+        setTasks((prev) =>
+            prev.filter((task) => !selectedTasks.has(task._id))
+        );
+        setSelectedTasks(new Set());
+       })()
+    };
+
+    const handleBulkStatusChange = (status: string) => {
+        setTasks((prev) =>
+            prev.map((task) =>
+                selectedTasks.has(task._id) ? { ...task, status } : task
+            )
+        );
+    };
+
+
+
 
 
 
@@ -221,9 +251,8 @@ useEffect(() => {
                 >
                     Due
                     <FaSort
-                        className={`ml-2 text-gray-500 transform ${
-                            sortOrder === "asc" ? "rotate-180" : "rotate-0"
-                        }`}
+                        className={`ml-2 text-gray-500 transform ${sortOrder === "asc" ? "rotate-180" : "rotate-0"
+                            }`}
                     />
                 </span>
                 <span className="font-bold w-1/5 text-center">Status</span>
@@ -242,11 +271,10 @@ useEffect(() => {
                                 {section.title} ({filterTasksByStatus(section.title).length})
                             </span>
                             <div
-                                className={`w-3 h-3 border-t-2 border-r-2 transform ${
-                                    openSections.includes(section.title)
-                                        ? "rotate-180"
-                                        : "-rotate-45"
-                                }`}
+                                className={`w-3 h-3 border-t-2 border-r-2 transform ${openSections.includes(section.title)
+                                    ? "rotate-180"
+                                    : "-rotate-45"
+                                    }`}
                                 style={{ borderColor: "black" }}
                             ></div>
                         </div>
@@ -262,6 +290,7 @@ useEffect(() => {
                                         <table className="w-full text-sm md:text-base">
 
                                             <tbody>
+
                                                 {filterTasksByStatus(section.title).map((task, index) => {
                                                     const taskDate = new Date(task.dueDate);
                                                     const today = new Date();
@@ -283,7 +312,8 @@ useEffect(() => {
                                                                 <input
                                                                     type="checkbox"
                                                                     className="mr-2"
-                                                                    readOnly
+                                                                    checked={selectedTasks.has(task._id)}
+                                                                    onChange={() => handleCheckboxChange(task._id)}
                                                                 />
                                                                 <FaBars className="mr-2 hidden md:inline-block" />
                                                                 <FaCheckCircle
@@ -349,12 +379,14 @@ useEffect(() => {
                                                         </tr>
                                                     );
                                                 })}
+
                                                 {isModalOpen && (
-                                                    <EditModal modalValue={setIsModalOpen}  editValue={editTaskValue} setTasksValue={setTasks} setOriginalTasks={setOriginalTasks}/>
+                                                    <EditModal modalValue={setIsModalOpen} editValue={editTaskValue} setTasksValue={setTasks} setOriginalTasks={setOriginalTasks} />
                                                 )}
                                             </tbody>
                                         </table>
                                     )}
+
                                 </div>
                             </div>
                         )}
@@ -362,6 +394,44 @@ useEffect(() => {
                     </div>
                 ))}
             </main>
+            {selectedTasks.size > 0 && (
+                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-black p-4 border rounded-lg shadow-lg flex items-center space-x-4">
+                    <span className="text-white">{selectedTasks.size} task(s) selected</span>
+                    <select
+                        className="px-2 py-1 border rounded-full"
+                        style={{
+                            backgroundColor: "#8D8A8A24", // Light transparent gray background for the main select box
+                            color: "white", // White text for the main select box
+                        }}
+                        onChange={(e) => handleBulkStatusChange(e.target.value)}
+                    >
+                        <option value="" disabled selected style={{ backgroundColor: "black", color: "white" }}>
+                            Status
+                        </option>
+                        <option value="todo" style={{ backgroundColor: "black", color: "white" }}>
+                            Todo
+                        </option>
+                        <option value="inprogress" style={{ backgroundColor: "black", color: "white" }}>
+                            In Progress
+                        </option>
+                        <option value="completed" style={{ backgroundColor: "black", color: "white" }}>
+                            Completed
+                        </option>
+                    </select>
+
+
+                    <button
+                        className="px-4 py-1 rounded"
+                        style={{
+                            backgroundColor: "#FF353524", // Delete button background
+                            color: "#E13838", // Delete button text color
+                        }}
+                        onClick={handleDeleteSelected}
+                    >
+                        Delete
+                    </button>
+                </div>
+            )}
         </>
     )
 }
