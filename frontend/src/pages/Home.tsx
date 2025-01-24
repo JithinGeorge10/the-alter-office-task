@@ -136,7 +136,7 @@ function Home() {
         {activeView === 'list' ? (
           <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} />
         ) : (
-          <Board categoryValue={filterCategory} dueValue={dueCategory} />
+          <Board categoryValue={filterCategory} dueValue={dueCategory} searchValue={searchTitle} />
         )}
       </div>
     </>

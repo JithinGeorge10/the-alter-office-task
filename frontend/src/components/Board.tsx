@@ -1,15 +1,35 @@
 import { useEffect, useState } from "react";
-import { fetchTasks } from "../services/taskService";
+import { fetchTasks, taskDelete } from "../services/taskService";
 import { Task } from "../types";
+import EditModal from "./EditModal";
 
-function Board({ categoryValue,dueValue }: any) {
+function Board({ categoryValue, dueValue, searchValue }: any) {
     const storedUserId = localStorage.getItem('userId');
     const [overDue, setOverview] = useState<Task[]>([]);
+    const [searchText, setSearchText] = useState('');
     const [thisWeek, setThisweek] = useState<Task[]>([]);
     const [todaysTask, setTodaysTasks] = useState<Task[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [originalTasks, setOriginalTasks] = useState<Task[]>([]);
+    const [showDropdown, setShowDropdown] = useState<string | null>(null);
+    const [dropdownValue, setDropdownValue] = useState("");
+    const [editTaskValue, setEditTaskValue] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
+    useEffect(() => {
+        const searchKey = searchValue
+        console.log(searchKey)
+        setSearchText(searchKey);
+
+        if (searchKey.trim() === '') {
+            setTasks(originalTasks);
+        } else {
+            const filteredTasks = tasks.filter(task =>
+                task.title.toLowerCase().includes(searchKey.toLowerCase())
+            );
+            setTasks(filteredTasks);
+        }
+    }, [searchValue])
     useEffect(() => {
         if (!storedUserId) return;
         (async () => {
@@ -70,26 +90,81 @@ function Board({ categoryValue,dueValue }: any) {
                 </div>
             );
         }
+        // const toggleDropdown = (taskId: string) => {
+        //     setShowDropdown((prev) => (prev === taskId ? null : taskId));
+        // };
 
+        // const handleEdit = (e: unknown, taskId: string) => {
+        //     console.log(`Edit task with ID: ${taskId}`);
+        //     setShowDropdown(null); // Close dropdown
+        // };
+
+        // const handleDelete = (taskId: string) => {
+        //     console.log(`Delete task with ID: ${taskId}`);
+        //     setShowDropdown(null); // Close dropdown
+        // };
+
+        const handleEdit = (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
+            (async () => {
+                const taskId = _id
+                const action = e.target.value
+                if (action === 'delete') {
+                    await taskDelete(taskId)
+                    setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+                    setOriginalTasks((prevOriginalTasks) =>
+                        prevOriginalTasks.filter((task) => task._id !== taskId)
+                    );
+                    setDropdownValue("");
+                } else {
+                    setEditTaskValue(taskId);
+                    setIsModalOpen(true);
+                }
+            })()
+        }
         return taskList.map((task) => (
-            <div key={task._id} className="bg-white p-4 rounded-md shadow-sm flex flex-col justify-between h-full">
-                <h3 className="font-bold text-gray-800 mb-10">{task.title}</h3>
-                <div className="flex justify-between mt-auto">
+            <div
+                key={task._id}
+                className="bg-white p-4 rounded-md shadow-sm flex flex-col h-full relative"
+            >
+
+                <div className="flex justify-between items-start mb-9">
+                    <h3 className="font-bold text-gray-800">{task.title}</h3>
+                    <div className="relative">
+                        <select
+                            value={dropdownValue}
+                            onChange={(e) => handleEdit(e, task._id)}
+                            className="appearance-none font-bold rounded-lg py-2 px-4 pr-10 "
+                        >
+                            <option selected disabled value="" className="text-gray-500 text-right">
+                                ...
+                            </option>
+                            <option className="bg-gray-100" value="edit">
+                                Edit
+                            </option>
+                            <option className="bg-gray-100" value="delete">
+                                Delete
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="mt-auto flex justify-between">
                     <p className="text-sm text-gray-500">{task.category}</p>
-                    <p className="text-sm text-gray-500">{formatDate(task.createdAt)}</p>
+                    <p className="text-sm text-gray-500 ">{formatDate(task.dueDate)}</p>
                 </div>
             </div>
         ));
+
     };
 
     useEffect(() => {
         if (!dueValue) return;
-    
+
         (async () => {
             console.log(dueValue);
             const currentDate = new Date();
             let filteredTasks;
-    
+
             if (dueValue === 'all') {
                 filteredTasks = originalTasks;
             } else {
@@ -102,14 +177,14 @@ function Board({ categoryValue,dueValue }: any) {
                             return taskDueDate.getTime() === currentDate.getTime();
                         });
                         break;
-    
+
                     case 'overdue':
                         filteredTasks = overDue.filter(task => {
                             const taskDueDate = new Date(task.dueDate);
                             return taskDueDate < currentDate;
                         });
                         break;
-    
+
                     case 'thisweek':
                         filteredTasks = thisWeek.filter(task => {
                             const taskDueDate = new Date(task.dueDate);
@@ -122,16 +197,16 @@ function Board({ categoryValue,dueValue }: any) {
                             return taskDueDate >= startOfWeek && taskDueDate <= endOfWeek;
                         });
                         break;
-    
+
                     default:
                         filteredTasks = tasks;
                 }
             }
-    
+
             setTasks(filteredTasks);
         })();
     }, [dueValue]);
-    
+
     return (
         <div className="min-h-screen bg-white px-4 py-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -163,7 +238,11 @@ function Board({ categoryValue,dueValue }: any) {
 
 
             </div>
+            {isModalOpen && (
+                <EditModal modalValue={setIsModalOpen} editValue={editTaskValue} setTasksValue={setTasks} setOriginalTasks={setOriginalTasks} />
+            )}
         </div>
+
     );
 }
 
