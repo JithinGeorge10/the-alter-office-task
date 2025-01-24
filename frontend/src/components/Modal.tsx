@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { FaBold, FaItalic, FaListOl, FaListUl, FaTimes, } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-function Modal({ modalValue ,addTaskValue}: any) {
+function Modal({ modalValue, addTaskValue }: any) {
     const storedUserId = localStorage.getItem('userId');
 
     const navigate = useNavigate();
@@ -49,14 +49,14 @@ function Modal({ modalValue ,addTaskValue}: any) {
         }
     };
 
-    
+
     const handleSubmit = () => {
         (async () => {
             if (!taskName || !text || !date || !status || !category || !storedUserId) {
                 alert("Please fill in all the required fields.");
                 return;
             }
-            addTaskValue({ taskName, text, date, status, category, storedUserId});
+            addTaskValue({ taskName, text, date, status, category, storedUserId });
             setTaskName('')
             setText('')
             setFile(null)
@@ -71,7 +71,7 @@ function Modal({ modalValue ,addTaskValue}: any) {
 
     return (
         <>
-            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
                     <div className="flex justify-between">
                         <h2 className="text-xl font-bold">Create Task</h2>
@@ -85,12 +85,12 @@ function Modal({ modalValue ,addTaskValue}: any) {
                             type="text"
                             onChange={handleTaskName}
                             placeholder="Task Title"
-                              className="w-full border rounded p-2 mb-2 bg-gray-200"
+                            className="w-full border rounded p-2 mb-2 bg-gray-200"
                         />
                         <div className="relative w-full border rounded p-2 h-40 mb-2">
                             <textarea
                                 placeholder="Description"
-                                className="w-full h-full p-2 resize-none focus:outline-none"
+                                className="w-full h-full p-2 resize-none focus:outline-none "
                                 value={text}
                                 onChange={handleChange}
                                 maxLength={maxLength}

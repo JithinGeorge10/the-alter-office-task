@@ -116,7 +116,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
 
 
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg w-full max-w-4xl flex gap-6">
     
                 <div className="w-3/4">
@@ -139,7 +139,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
                         <div className="relative w-full border rounded p-2 h-40 mb-2">
                             <textarea
                                 placeholder="Description"
-                                className="w-full h-full bg-gray-200 p-2 resize-none focus:outline-none"
+                                className="w-full h-full  p-2 resize-none focus:outline-none"
                                 value={text}
                                 onChange={handleChange}
                                 maxLength={maxLength}
