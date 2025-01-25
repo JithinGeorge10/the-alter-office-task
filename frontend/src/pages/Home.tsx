@@ -17,7 +17,6 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [taskDetails, setTaskDetails] = useState({});
-  const [taskDetailsBoard, setTaskDetailsBoard] = useState({});
   const [activeView, setActiveView] = useState('list');
   const [changed, setChanged] =useState(false)
 
@@ -137,7 +136,7 @@ function Home() {
         </div>
 
         {isModalOpen && (
-          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} addTaskValueBoard={setTaskDetailsBoard} />
+          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails}  />
         )}
         <div style={{ display: activeView === 'list' ? 'block' : 'none' }}>
           <List key="list" categoryValue={filterCategory}  searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} setChanged={setChanged} changed={changed}/>
