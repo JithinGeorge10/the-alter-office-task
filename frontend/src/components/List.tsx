@@ -57,8 +57,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
         setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
     };
     const toggleSection = (sectionTitle: string) => {
-        console.log("Toggling section: ", sectionTitle);
-        console.log("Current open sections: ", openSections);
         setOpenSections((prevOpenSections) =>
             prevOpenSections.includes(sectionTitle)
                 ? prevOpenSections.filter((title) => title !== sectionTitle)
@@ -86,7 +84,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
                     task._id === response.user._id ? { ...task, status } : task
                 )
             );
-            console.log(response);
         } catch (error) {
             console.error("Failed to change status:", error);
         }
@@ -111,7 +108,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
     }
 
     useEffect(() => {
-        console.log(categoryValue)
         const filterKey = categoryValue;
         if (!filterKey || filterKey === 'Category') {
             return;
@@ -129,7 +125,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
 
     useEffect(() => {
         const searchKey = searchValue
-        console.log(searchKey)
         setSearchText(searchKey);
 
         if (searchKey.trim() === '') {
@@ -158,7 +153,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
             );
 
             if (isTaskDuplicate) {
-                console.log('Task is identical to the previous one. Not adding.');
                 return;
             }
 
@@ -171,7 +165,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
                 const uploadSnapshot = await uploadBytes(storageRef, file);
 
                 const fileUrl = await getDownloadURL(uploadSnapshot.ref);
-                console.log('File uploaded successfully. File URL:', fileUrl);
 
                 newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, fileUrl);
             }
@@ -183,7 +176,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
                     if (!isTaskAlreadyInState) {
                         return [...prevTasks, newTask];
                     }
-                    console.log('Task already exists in the state. Not adding again.');
                     return prevTasks;
                 });
             } else {
@@ -208,7 +200,6 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
         if (!dueValue) return;
 
         (async () => {
-            console.log(dueValue);
             const currentDate = new Date();
 
             let filteredTasks;
@@ -274,8 +265,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,chang
 
     const handleBulkStatusChange = (status: string) => {
         (async () => {
-            console.log(selectedTasks)
-            console.log(status)
+            
             const taskArray = Array.from(selectedTasks)
             const taskStatus = status
             await statusChangeBatch(taskArray, taskStatus)

@@ -23,7 +23,6 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     useEffect(() => {
         (async () => {
             const response = await singleUsertask(editValue);
-            console.log(response);
             setHistory(response.history);
         })();
     }, [editValue]);
@@ -100,7 +99,6 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
             const uploadedFile = e.target.files[0];
             if (uploadedFile) {
                 setLoading(true); // Set loading to true when file upload starts
-                console.log(uploadedFile);
                 const filePreview = URL.createObjectURL(uploadedFile);
                 setFile(filePreview);
                 const storage = getStorage();
@@ -122,7 +120,6 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
             }
 
             try {
-                console.log("Current editImage value:", editImage);
 
 
                 const editedResponse = await editTasks(
@@ -159,7 +156,6 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     useEffect(() => {
         (async () => {
             const response = await singleUsertask(editValue)
-            console.log(response)
             setTasks(response)
             setTaskName(response.title);
             setText(response.description);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addTask, fetchTasks, taskDelete } from "../services/taskService";
+import { addTask, fetchTasks } from "../services/taskService";
 import { Task } from "../types";
 import EditModal from "./EditModal";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -34,7 +34,6 @@ function Board({ categoryValue, dueValue, searchValue, taskValue, setChanged, ch
             );
 
             if (isTaskDuplicate) {
-                console.log('Task is identical to the previous one. Not adding.');
                 return;
             }
 
@@ -47,7 +46,6 @@ function Board({ categoryValue, dueValue, searchValue, taskValue, setChanged, ch
                 const uploadSnapshot = await uploadBytes(storageRef, file);
 
                 const fileUrl = await getDownloadURL(uploadSnapshot.ref);
-                console.log('File uploaded successfully. File URL:', fileUrl);
 
                 newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, fileUrl);
             }
@@ -59,7 +57,6 @@ function Board({ categoryValue, dueValue, searchValue, taskValue, setChanged, ch
                     if (!isTaskAlreadyInState) {
                         return [...prevTasks, newTask];
                     }
-                    console.log('Task already exists in the state. Not adding again.');
                     return prevTasks;
                 });
             } else {
@@ -80,7 +77,6 @@ function Board({ categoryValue, dueValue, searchValue, taskValue, setChanged, ch
 
     useEffect(() => {
         const searchKey = searchValue
-        console.log(searchKey)
         setSearchText(searchKey);
 
         if (searchKey.trim() === '') {
@@ -118,30 +114,10 @@ function Board({ categoryValue, dueValue, searchValue, taskValue, setChanged, ch
             const filteredTasks = originalTasks.filter(task =>
                 task.category.toLowerCase() === filterKey.toLowerCase()
             );
-            console.log(filteredTasks)
             setTasks(filteredTasks);
 
         }
     }, [categoryValue])
-
-
-    const formatDate = (date: string) => {
-        const taskDate = new Date(date);
-        const today = new Date();
-
-
-        taskDate.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-
-        if (taskDate.getTime() === today.getTime()) {
-            return 'Today';
-        }
-
-        const dateFormatted = taskDate.getDate();
-        const monthFormatted = taskDate.getMonth() + 1;
-        const yearFormatted = taskDate.getFullYear();
-        return `${dateFormatted}/${monthFormatted}/${yearFormatted}`;
-    };
 
 
 
@@ -150,7 +126,6 @@ function Board({ categoryValue, dueValue, searchValue, taskValue, setChanged, ch
         if (!dueValue) return;
 
         (async () => {
-            console.log(dueValue);
             const currentDate = new Date();
             let filteredTasks;
 

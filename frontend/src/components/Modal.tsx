@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { FaBold, FaItalic, FaListOl, FaListUl, FaTimes, } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-function Modal({ modalValue, addTaskValue, addTaskValueBoard }: any) {
+function Modal({ modalValue, addTaskValue }: any) {
     const storedUserId = localStorage.getItem('userId');
 
     const navigate = useNavigate();

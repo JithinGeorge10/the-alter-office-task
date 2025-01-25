@@ -15,7 +15,6 @@ function Navbar() {
       const storedDisplayName = localStorage.getItem('displayName');
       const storedPhoto = localStorage.getItem('photoURL');
       const photo = storedPhoto ?? undefined;
-      console.log(photo)
   return (
     <div>
        <header className="flex items-center justify-between p-4">

@@ -3,7 +3,6 @@ export const addTask = async (req, res) => {
   try {
     if (req.userId) {
       const { taskName, description, date, status, category, userId, fileUrl } = req.body;
-      console.log(req.body);
       
       if (!taskName || !date || !status || !category || !userId) {
         return res.status(400).json({ message: 'All fields are required' });
@@ -77,7 +76,6 @@ export const changeStatus = async (req, res) => {
       { status },
       { new: true }
     );
-    console.log(updatedUser)
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -96,7 +94,6 @@ export const deleteTask = async (req, res) => {
     }
 
     const { taskId } = req.body;
-    console.log(req.body)
     if (!taskId) {
       return res.status(400).json({ message: 'Task ID is required' });
     }
@@ -137,7 +134,6 @@ export const editTask = async (req, res) => {
     if (!req.userId) {
       return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
     }
-    console.log(req.body)
     const createdAt = new Date().toLocaleString(); 
     const historyEntry = `You edited on ${createdAt}`;
     const { taskId, userId, taskName, description, date, status, category ,editImage} = req.body;
@@ -179,7 +175,6 @@ export const deleteBatchTask = async (req, res) => {
     if (!req.userId) {
       return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
     }
-    console.log('rreach');
   
     const { taskArray } = req.body;
 

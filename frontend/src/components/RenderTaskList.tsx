@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { taskDelete } from "../services/taskService";
-import { Task } from "../types";
 
 export const RenderTaskList = ({ taskListUnfiltered, status, setChanged, dropdownValue, setTasks, setOriginalTasks, setEditTaskValue, setIsModalOpen, setDropdownValue }: any) => {
 
-    console.log(taskListUnfiltered)
     const mapStatus = (status: string) => {
         if (status === 'TO-DO') return 'todo';
         if (status === 'IN-PROGRESS') return 'inprogress';

@@ -28,7 +28,6 @@ export const fetchTasks = async (userId: string) => {
                 withCredentials: true,
             }
         );
-        console.log(response.data); 
 
         return response.data
     } catch (error) {
@@ -51,7 +50,6 @@ export const changeStatus = async (status:any,userId:any) => {
                 withCredentials: true,
             }
         );
-        console.log(response.data); 
 
         return response.data
     } catch (error) {
@@ -88,7 +86,6 @@ export const singleUsertask = async (taskId:any) => {
                 withCredentials: true,
             }
         );
-        console.log(response.data); 
 
         return response.data
     } catch (error) {
@@ -104,7 +101,6 @@ export const editTasks = async (taskName: any, text: string, date: string, statu
             },
             withCredentials: true,
         });
-        console.log(response)
         return response
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -122,7 +118,6 @@ export const deleteBatch = async (taskArray: string[]) => {
                 withCredentials: true,
             }
         );
-        console.log(response);
         return response;
     } catch (error) {
         console.error("Error deleting tasks:", error);
@@ -139,7 +134,6 @@ export const statusChangeBatch = async (taskArray: string[], taskStatus: string)
             },
             withCredentials: true,
         });
-        console.log(response)
         return response
     } catch (error) {
         console.error("Error fetching tasks:", error);
