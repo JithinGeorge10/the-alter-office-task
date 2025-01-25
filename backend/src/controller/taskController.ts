@@ -3,15 +3,14 @@ import Task from "../model/taskModel"
 export const addTask = async (req, res) => {
   try {
     if (req.userId) {
-      const { taskName, description, date, status, category, userId } = req.body;
+      const { taskName, description, date, status, category, userId,fileUrl } = req.body;
       console.log(req.body)
-      if (!taskName || !date || !status || !category || !userId) {
+      if (!taskName || !date || !status || !category || !userId || !fileUrl) {
         return res.status(400).json({ message: 'All fields are required' });
       }
 
       const lastTask = await Task.findOne({ userId }).sort({ position: -1 });
       const newPosition = lastTask ? lastTask.position + 1 : 1;
-
       const newTask = new Task({
         userId,
         title: taskName,
@@ -20,7 +19,9 @@ export const addTask = async (req, res) => {
         status,
         category,
         position: newPosition,
+        attachments: [fileUrl],
       });
+      
 
 
       const savedTask = await newTask.save();
@@ -91,6 +92,7 @@ export const deleteTask = async (req, res) => {
     }
 
     const { taskId } = req.body;
+    console.log(req.body)
     if (!taskId) {
       return res.status(400).json({ message: 'Task ID is required' });
     }
@@ -131,12 +133,19 @@ export const editTask = async (req, res) => {
     if (!req.userId) {
       return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
     }
-    const { taskId, userId, taskName, description, date, status, category } = req.body;
-    console.log(taskId, userId, taskName, description, date, status, category)
+    console.log(req.body)
+    const { taskId, userId, taskName, description, date, status, category ,editImage} = req.body;
 
     const updatedTask = await Task.findOneAndUpdate(
       { _id: taskId, userId: userId },
-      { title: taskName, description, dueDate: date, status, category },
+      {
+        title: taskName,
+        description,
+        dueDate: date,
+        status,
+        category,
+        attachments: [editImage]
+      },
       { new: true }
     );
 

@@ -135,11 +135,13 @@ function Home() {
         {isModalOpen && (
           <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} addTaskValueBoard={setTaskDetailsBoard} />
         )}
-        {activeView === 'list' ? (
+        <div style={{ display: activeView === 'list' ? 'block' : 'none' }}>
           <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} />
-        ) : (
+        </div>
+        <div style={{ display: activeView === 'board' ? 'block' : 'none' }}>
           <Board categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetailsBoard} searchValue={searchTitle} />
-        )}
+        </div>
+
       </div>
     </>
   );

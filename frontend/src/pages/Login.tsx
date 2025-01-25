@@ -54,7 +54,7 @@ const Login: React.FC = () => {
                             Streamline your workflow and track progress effortlessly with our
                             all-in-one task management app.
                         </p>
-                        <button 
+                        <button  
                             onClick={handleGoogleLogin} 
                             className="bg-black text-white px-6 py-3 rounded-full flex items-center justify-center gap-2 hover:bg-gray-800"
                         >

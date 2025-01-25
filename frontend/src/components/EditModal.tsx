@@ -2,17 +2,23 @@ import { useEffect, useState } from "react";
 import { FaBold, FaItalic, FaListOl, FaListUl, FaTimes } from "react-icons/fa";
 import { editTasks, singleUsertask } from "../services/taskService";
 import { Task } from "../types";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: any) {
+    const [loading, setLoading] = useState(false);
 
     const storedUserId = localStorage.getItem("userId");
     const [taskName, setTaskName] = useState("");
     const [text, setText] = useState("");
-    const [_file, setFile] = useState(null);
+    const [file, setFile] = useState<string | null>(null); // Update the type to allow a string or null
     const [category, setCategory] = useState("");
     const [date, setDate] = useState("");
     const [status, setStatus] = useState("");
     const [_tasks, setTasks] = useState<Task | null>(null);
+    const [editImage, setEditImage] = useState<string | null>(null); // Update the type to allow a string or null
+
+
 
     const maxLength = 3000;
 
@@ -27,10 +33,14 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
         setTaskName("");
         setText("");
         setFile(null);
+        setEditImage(null)
         setCategory("");
         setDate("");
         setStatus("");
         modalValue(false);
+    };
+    const removeImage = () => {
+        setFile(null);
     };
 
     const handleChange = (event: any) => {
@@ -58,19 +68,35 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     };
 
     const handleFileUpload = (e: any) => {
-        const uploadedFile = e.target.files[0];
-        if (uploadedFile) {
-            setFile(uploadedFile);
-        }
+        (async () => {
+            const uploadedFile = e.target.files[0];
+            if (uploadedFile) {
+                setLoading(true); // Set loading to true when file upload starts
+                console.log(uploadedFile);
+                const filePreview = URL.createObjectURL(uploadedFile);
+                setFile(filePreview);
+                const storage = getStorage();
+                const storageRef = ref(storage, `tasks/${Date.now()}_${uploadedFile.name}`);
+                const uploadSnapshot = await uploadBytes(storageRef, uploadedFile);
+                const fileUrl = await getDownloadURL(uploadSnapshot.ref);
+                setEditImage(fileUrl);
+                setLoading(false); // Set loading to false once file URL is received
+            }
+        })();
     };
+
+
     const handleSubmit = () => {
         (async () => {
             if (!taskName || !text || !date || !status || !category || !storedUserId) {
                 alert("Please fill in all the required fields.");
                 return;
             }
-    
+
             try {
+                console.log("Current editImage value:", editImage);
+
+
                 const editedResponse = await editTasks(
                     taskName,
                     text,
@@ -78,18 +104,18 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
                     status,
                     category,
                     storedUserId,
-                    editValue
+                    editValue, editImage
                 );
-    
+
                 const updatedTask = editedResponse?.data;
-    
+
                 if (updatedTask) {
 
-                    setTasksValue((prevTasks: Task[]) => 
+                    setTasksValue((prevTasks: Task[]) =>
                         prevTasks.map(task => task._id === updatedTask._id ? updatedTask : task)
                     );
-    
-                    setOriginalTasks((prevOriginalTasks: Task[]) => 
+
+                    setOriginalTasks((prevOriginalTasks: Task[]) =>
                         prevOriginalTasks.map(task => task._id === updatedTask._id ? updatedTask : task)
                     );
                 }
@@ -100,7 +126,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
             }
         })();
     };
-    
+
 
     useEffect(() => {
         (async () => {
@@ -111,6 +137,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
             setCategory(response.category);
             setDate(response.dueDate);
             setStatus(response.status);
+            setFile(response.attachments[0])
         })()
     }, [editValue])
 
@@ -118,7 +145,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg w-full max-w-4xl flex gap-6">
-    
+
                 <div className="w-3/4">
                     <div className="flex justify-between">
                         <h2 className="text-xl font-bold"></h2>
@@ -232,6 +259,29 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
                                 </span>
                             </div>
                         </div>
+                        <div className="relative w-1/4 flex-shrink-0">
+                            {loading ? (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-gray-500">Loading...</span> {/* You can replace this with a spinner */}
+                                </div>
+                            ) : file ? (
+                                <>
+                                    <img
+                                        src={file} // Replace with your image source
+                                        alt="Preview"
+                                        className="w-full h-auto rounded-lg"
+                                    />
+                                    <button
+                                        onClick={removeImage}
+                                        className="absolute top-1 right-1 bg-gray-100 p-1 rounded-full shadow-md text-gray-600 hover:text-gray-800"
+                                    >
+                                        <FaTimes className="text-sm" />
+                                    </button>
+                                </>
+                            ) : null}
+                        </div>
+
+
 
                         <div className="flex justify-end gap-4 mt-4">
                             <button

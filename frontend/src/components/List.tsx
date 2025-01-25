@@ -1,4 +1,5 @@
 import React from "react";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { useEffect, useState } from "react";
 import {
@@ -144,8 +145,17 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
     useEffect(() => {
         if (!taskValue) return;
         (async () => {
+            const {file}=taskValue
+            const storage = getStorage();
+            const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
+            const uploadSnapshot = await uploadBytes(storageRef, file);
+
+            // Step 2: Get the file URL
+            const fileUrl = await getDownloadURL(uploadSnapshot.ref);
+            console.log("File uploaded successfully. File URL:", fileUrl);
             const { taskName, text, date, status, category, storedUserId } = taskValue
-            const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId)
+            
+            const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId,fileUrl)
             console.log(newTaskResponse)
             setTasks((prevTasks) => {
                 if (newTaskResponse && newTaskResponse.data.task) {

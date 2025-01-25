@@ -8,7 +8,7 @@ function Modal({ modalValue, addTaskValue,addTaskValueBoard }: any) {
     const navigate = useNavigate();
     const [taskName, setTaskName] = useState('')
     const [text, setText] = useState('');
-    const [_file, setFile] = useState(null);
+    const [file, setFile] = useState(null);
     const [category, setCategory] = useState('');
     const [date, setDate] = useState('');
     const [status, setStatus] = useState('');
@@ -48,16 +48,14 @@ function Modal({ modalValue, addTaskValue,addTaskValueBoard }: any) {
             setFile(uploadedFile);
         }
     };
-
-
     const handleSubmit = () => {
         (async () => {
             if (!taskName || !text || !date || !status || !category || !storedUserId) {
                 alert("Please fill in all the required fields.");
                 return;
             }
-            addTaskValue({ taskName, text, date, status, category, storedUserId });
-            addTaskValueBoard({ taskName, text, date, status, category, storedUserId });
+            addTaskValue({ taskName, text, date, status, category, storedUserId,file });
+            addTaskValueBoard({ taskName, text, date, status, category, storedUserId,file });
             setTaskName('')
             setText('')
             setFile(null)
@@ -115,17 +113,19 @@ function Modal({ modalValue, addTaskValue,addTaskValueBoard }: any) {
                                         onClick={handleCategory}
                                         value="work"
                                         className={`px-4 py-1 border rounded-full ${category === "work"
-                                            ? "bg-blue-500 text-white"
+                                            ? "bg-[#7B1984] text-white"
                                             : "bg-transparent text-black"
                                             }`}
                                     >
                                         Work
                                     </button>
+
                                     <button
                                         onClick={handleCategory}
                                         value="personal"
+
                                         className={`px-4 py-1 border rounded-full ${category === "personal"
-                                            ? "bg-blue-500 text-white"
+                                            ? "bg-[#7B1984] text-white"
                                             : "bg-transparent text-black"
                                             }`}
                                     >
