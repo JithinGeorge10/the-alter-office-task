@@ -18,7 +18,7 @@ function Home() {
   const [searchText, setSearchText] = useState('');
   const [taskDetails, setTaskDetails] = useState({});
   const [activeView, setActiveView] = useState('list');
-  const [changed, setChanged] =useState(false)
+  const [changed, setChanged] = useState(false)
 
   const location = useLocation();
   const { userId } = location.state || {};
@@ -30,7 +30,8 @@ function Home() {
 
   const navigate = useNavigate();
   let userToken = Cookies.get('jwt');
-  console.log(Cookies.get('jwt'));
+  console.log('console' + Cookies.get('jwt'));
+  console.log('userToken' + userToken);
 
   useEffect(() => {
     if (!userToken) {
@@ -138,10 +139,10 @@ function Home() {
         </div>
 
         {isModalOpen && (
-          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails}  />
+          <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} />
         )}
         <div style={{ display: activeView === 'list' ? 'block' : 'none' }}>
-          <List key="list" categoryValue={filterCategory}  searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} setChanged={setChanged} changed={changed}/>
+          <List key="list" categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} setChanged={setChanged} changed={changed} />
         </div>
         <div style={{ display: activeView === 'board' ? 'block' : 'none' }}>
           <Board key="board" categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetails} searchValue={searchTitle} setChanged={setChanged} changed={changed} />
