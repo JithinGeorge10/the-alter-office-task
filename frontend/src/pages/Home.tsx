@@ -30,6 +30,8 @@ function Home() {
 
   const navigate = useNavigate();
   let userToken = Cookies.get('jwt');
+  console.log(Cookies.get('jwt'));
+
   useEffect(() => {
     if (!userToken) {
       navigate('/login');
