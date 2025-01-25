@@ -16,30 +16,49 @@ function Board({ categoryValue, dueValue, searchValue, taskValue }: any) {
     const [editTaskValue, setEditTaskValue] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        if (!taskValue) return;
-        (async () => {
-            const { file } = taskValue
-            const storage = getStorage();
-            const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
-            const uploadSnapshot = await uploadBytes(storageRef, file);
+    
+        useEffect(() => {
 
-            // Step 2: Get the file URL
-            const fileUrl = await getDownloadURL(uploadSnapshot.ref);
-            console.log("File uploaded successfully. File URL:", fileUrl);
-            const { taskName, text, date, status, category, storedUserId } = taskValue
-            const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, fileUrl)
-            console.log(newTaskResponse)
-            setTasks((prevTasks) => {
-                if (newTaskResponse && newTaskResponse.data.task) {
-                    const newTask = newTaskResponse.data.task as Task;
-                    return [...prevTasks, newTask];
+            (async () => {
+                const { file } = taskValue;
+                const { taskName, text, date, status, category, storedUserId } = taskValue;
+        
+                if (!file) {
+                    const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId,'');
+                    console.log(newTaskResponse);
+        
+                    setTasks((prevTasks) => {
+                        if (newTaskResponse && newTaskResponse.data.task) {
+                            const newTask = newTaskResponse.data.task as Task;
+                            return [...prevTasks, newTask];
+                        }
+                        console.error("Invalid task response", newTaskResponse);
+                        return prevTasks;
+                    });
+                    return;
                 }
-                console.error("Invalid task response", newTaskResponse);
-                return prevTasks;
-            });
-        })();
-    }, [taskValue]);
+        
+                const storage = getStorage();
+                const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
+                const uploadSnapshot = await uploadBytes(storageRef, file);
+        
+                const fileUrl = await getDownloadURL(uploadSnapshot.ref);
+                console.log("File uploaded successfully. File URL:", fileUrl);
+        
+                const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, fileUrl);
+                console.log(newTaskResponse);
+        
+                setTasks((prevTasks) => {
+                    if (newTaskResponse && newTaskResponse.data.task) {
+                        const newTask = newTaskResponse.data.task as Task;
+                        return [...prevTasks, newTask];
+                    }
+                    console.error("Invalid task response", newTaskResponse);
+                    return prevTasks;
+                });
+            })();
+        }, [taskValue]);
+        
 
     useEffect(() => {
         const searchKey = searchValue

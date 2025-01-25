@@ -12,6 +12,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     const [taskName, setTaskName] = useState("");
     const [text, setText] = useState("");
     const [file, setFile] = useState<string | null>(null); // Update the type to allow a string or null
+    const [history, setHistory] = useState<string | null>(null); // Update the type to allow a string or null
     const [category, setCategory] = useState("");
     const [date, setDate] = useState("");
     const [status, setStatus] = useState("");
@@ -19,15 +20,42 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     const [editImage, setEditImage] = useState<string | null>(null); // Update the type to allow a string or null
 
 
+    useEffect(() => {
+        (async () => {
+            const response = await singleUsertask(editValue);
+            console.log(response);
+            setHistory(response.history);
+        })();
+    }, [editValue]);
 
+    const formatDate = (dateStr: string) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+        // Split the input string to extract date and time
+        const [datePart, timePart] = dateStr.split(', ');
+        const [day, month, year] = datePart.split('/').map(num => parseInt(num, 10));
+        const [hour, minute, second] = timePart.split(':').map(num => parseInt(num, 10));
+      
+        // Create a date object with the correct values
+        const date = new Date(year, month - 1, day, hour, minute, second);
+      
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+          return 'Invalid date';
+        }
+      
+        const monthName = months[date.getMonth()];
+        const dayOfMonth = date.getDate();
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        
+        hours = hours % 12 || 12; // Convert 24hr to 12hr format
+      
+        return `${monthName} ${dayOfMonth} at ${hours}:${minutes}${ampm}`;
+    };
     const maxLength = 3000;
 
-    // // Dummy activity log data
-    // const dummyActivities = [
-    //     { activity: "You created this task", time: "Dec 27 at 1:15pm" },
-    //     { activity: "Task updated", time: "Dec 28 at 9:00am" },
-    //     { activity: "Comment added", time: "Dec 28 at 10:30am" },
-    // ];
 
     const closeModal = () => {
         setTaskName("");
@@ -131,25 +159,27 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
     useEffect(() => {
         (async () => {
             const response = await singleUsertask(editValue)
+            console.log(response)
             setTasks(response)
             setTaskName(response.title);
             setText(response.description);
             setCategory(response.category);
             setDate(response.dueDate);
             setStatus(response.status);
-            setFile(response.attachments[0])
+            setFile(response.attachments[0]);
+            setHistory(response.history)
         })()
     }, [editValue])
 
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-4xl flex gap-6">
+            <div className="bg-white p-6 rounded-lg w-full max-w-4xl flex gap-6 relative">
 
                 <div className="w-3/4">
                     <div className="flex justify-between">
                         <h2 className="text-xl font-bold"></h2>
-                        <button onClick={closeModal} className="text-gray-600">
+                        <button onClick={closeModal} className="text-gray-600 absolute top-4 right-4 ">
                             <FaTimes className="text-2xl" />
                         </button>
                     </div>
@@ -283,7 +313,7 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
 
 
 
-                        <div className="flex justify-end gap-4 mt-4">
+                        <div className="flex justify-end gap-4 mt-4 absolute bottom-4 right-4 ">
                             <button
                                 onClick={closeModal}
                                 className="px-6 py-2 text-sm bg-gray-200 rounded-full"
@@ -301,21 +331,30 @@ function EditModal({ modalValue, editValue, setTasksValue, setOriginalTasks }: a
                     </div>
                 </div>
 
-                {/* Activity Sidebar
-                <div className="w-1/4  p-4 rounded-lg overflow-y-auto h-[500px]">
+                <div className="w-1/4 p-4 rounded-lg overflow-y-auto h-[500px]">
                     <h3 className="text-sm text-gray-500 mb-4">Activity</h3>
                     <ul className="space-y-3">
-                        {dummyActivities.map((activity, index) => (
-                            <li
-                                key={index}
-                                className="p-2 bg-white rounded-lg shadow border border-gray-200"
-                            >
-                                <p className="text-sm font-semibold">{activity.activity}</p>
-                                <span className="text-xs text-gray-500">{activity.time}</span>
-                            </li>
-                        ))}
+                        {history ? (
+                            (Array.isArray(history) ? history : [history]).map((item, index) => {
+                                const parts = item.split(' on '); // Split to separate description and date
+                                const description = parts[0];
+                                const dateStr = parts[1];
+                                const formattedDate = dateStr ? formatDate(dateStr) : '';
+
+                                return (
+                                    <li key={index} className="flex justify-between text-sm text-gray-700">
+                                        <span>{description}</span>
+                                        <span className="text-right text-gray-500">{formattedDate}</span>
+                                    </li>
+                                );
+                            })
+                        ) : (
+                            <li className="text-sm text-gray-500">No activity yet</li>
+                        )}
                     </ul>
-                </div> */}
+                </div>
+
+
             </div>
         </div>
     );

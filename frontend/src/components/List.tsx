@@ -141,33 +141,57 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
         }
     }, [searchValue])
 
-
     useEffect(() => {
-        if (!taskValue) return;
         (async () => {
-            const {file}=taskValue
-            const storage = getStorage();
-            const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
-            const uploadSnapshot = await uploadBytes(storageRef, file);
-
-            // Step 2: Get the file URL
-            const fileUrl = await getDownloadURL(uploadSnapshot.ref);
-            console.log("File uploaded successfully. File URL:", fileUrl);
-            const { taskName, text, date, status, category, storedUserId } = taskValue
-            
-            const newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId,fileUrl)
-            console.log(newTaskResponse)
-            setTasks((prevTasks) => {
-                if (newTaskResponse && newTaskResponse.data.task) {
-                    const newTask = newTaskResponse.data.task as Task;
-                    return [...prevTasks, newTask];
-                }
+            const { file } = taskValue;
+            const { taskName, text, date, status, category, storedUserId } = taskValue;
+    
+            const isTaskDuplicate = tasks.some((task) => 
+                task.taskName === taskName &&
+                task.description === text &&
+                task.dueDate === date &&
+                task.status === status &&
+                task.category === category &&
+                task.attachments === (file ? file.name : '')
+            );
+    
+            if (isTaskDuplicate) {
+                console.log("Task is identical to the previous one. Not adding.");
+                return;
+            }
+    
+            let newTaskResponse;
+            if (!file) {
+                newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, '');
+            } else {
+                const storage = getStorage();
+                const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
+                const uploadSnapshot = await uploadBytes(storageRef, file);
+    
+                const fileUrl = await getDownloadURL(uploadSnapshot.ref);
+                console.log("File uploaded successfully. File URL:", fileUrl);
+    
+                newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, fileUrl);
+            }
+    
+            console.log(newTaskResponse);
+    
+            if (newTaskResponse && newTaskResponse.data.task) {
+                const newTask = newTaskResponse.data.task as Task;
+                setTasks((prevTasks) => {
+                    const isTaskAlreadyInState = prevTasks.some((task) => task._id === newTask._id);
+                    if (!isTaskAlreadyInState) {
+                        return [...prevTasks, newTask];
+                    }
+                    console.log("Task already exists in the state. Not adding again.");
+                    return prevTasks;
+                });
+            } else {
                 console.error("Invalid task response", newTaskResponse);
-                return prevTasks;
-            });
+            }
         })();
-    }, [taskValue]);
-
+    }, [taskValue]); 0  
+    
 
     useEffect(() => {
         if (!dueValue) return;
@@ -185,7 +209,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                     case 'today':
                         filteredTasks = todaysTask.filter(task => {
                             const taskDueDate = new Date(task.dueDate);
-                            return taskDueDate.toDateString() === currentDate.toDateString(); // Tasks due today
+                            return taskDueDate.toDateString() === currentDate.toDateString(); 
                         });
                         break;
 

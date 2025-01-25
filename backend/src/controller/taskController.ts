@@ -1,16 +1,21 @@
 import Task from "../model/taskModel"
-
 export const addTask = async (req, res) => {
   try {
     if (req.userId) {
-      const { taskName, description, date, status, category, userId,fileUrl } = req.body;
-      console.log(req.body)
-      if (!taskName || !date || !status || !category || !userId || !fileUrl) {
+      const { taskName, description, date, status, category, userId, fileUrl } = req.body;
+      console.log(req.body);
+      
+      if (!taskName || !date || !status || !category || !userId) {
         return res.status(400).json({ message: 'All fields are required' });
       }
 
       const lastTask = await Task.findOne({ userId }).sort({ position: -1 });
       const newPosition = lastTask ? lastTask.position + 1 : 1;
+      
+      // Create a new task history entry with the creation time
+      const createdAt = new Date().toLocaleString(); // Gets the current date and time
+      const historyEntry = `Created this task on ${createdAt}`;
+      
       const newTask = new Task({
         userId,
         title: taskName,
@@ -20,9 +25,8 @@ export const addTask = async (req, res) => {
         category,
         position: newPosition,
         attachments: [fileUrl],
+        history: [historyEntry], // Add the history entry here
       });
-      
-
 
       const savedTask = await newTask.save();
       return res.status(201).json({ message: 'Task added successfully', task: savedTask });
@@ -34,6 +38,7 @@ export const addTask = async (req, res) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 
 export const fetchTask = async (req, res) => {
