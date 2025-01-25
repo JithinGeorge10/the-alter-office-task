@@ -12,7 +12,7 @@ import { addTask, changeStatus, deleteBatch, fetchTasks, statusChangeBatch, task
 import { Section, Task } from '../types'
 import EditModal from "./EditModal";
 
-function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
+function List({ categoryValue, searchValue, taskValue, dueValue,setChanged,changed }: any) {
 
     const storedUserId = localStorage.getItem('userId');
     const [_searchText, setSearchText] = useState('');
@@ -43,9 +43,9 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
             setTodaysTasks(response)
             setOverview(response)
             setThisweek(response)
-
+            
         })();
-    }, [storedUserId]);
+    }, [storedUserId,changed]);
 
     const handleSortByDate = () => {
         const sortedTasks = [...tasks].sort((a, b) => {
@@ -91,7 +91,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
             console.error("Failed to change status:", error);
         }
     };
-    const handleEdit = (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
+    const handleAction = (e: React.ChangeEvent<HTMLSelectElement>, _id: string) => {
         (async () => {
             const taskId = _id
             const action = e.target.value
@@ -107,6 +107,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                 setIsModalOpen(true);
             }
         })()
+        setChanged((prev:boolean)=>!prev)
     }
 
     useEffect(() => {
@@ -142,24 +143,25 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
     }, [searchValue])
 
     useEffect(() => {
-        (async () => {
-            const { file } = taskValue;
-            const { taskName, text, date, status, category, storedUserId } = taskValue;
-    
-            const isTaskDuplicate = tasks.some((task) => 
-                task.taskName === taskName &&
+        if (!taskValue) return; 
+
+        const addNewTask = async () => {
+            const { file, taskName, text, date, status, category, storedUserId } = taskValue;
+
+            const isTaskDuplicate = tasks.some((task) =>
+                task.title === taskName &&
                 task.description === text &&
                 task.dueDate === date &&
                 task.status === status &&
                 task.category === category &&
                 task.attachments === (file ? file.name : '')
             );
-    
+
             if (isTaskDuplicate) {
-                console.log("Task is identical to the previous one. Not adding.");
+                console.log('Task is identical to the previous one. Not adding.');
                 return;
             }
-    
+
             let newTaskResponse;
             if (!file) {
                 newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, '');
@@ -167,31 +169,40 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                 const storage = getStorage();
                 const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
                 const uploadSnapshot = await uploadBytes(storageRef, file);
-    
+
                 const fileUrl = await getDownloadURL(uploadSnapshot.ref);
-                console.log("File uploaded successfully. File URL:", fileUrl);
-    
+                console.log('File uploaded successfully. File URL:', fileUrl);
+
                 newTaskResponse = await addTask(taskName, text, date, status, category, storedUserId, fileUrl);
             }
-    
-            console.log(newTaskResponse);
-    
-            if (newTaskResponse && newTaskResponse.data.task) {
-                const newTask = newTaskResponse.data.task as Task;
+
+            if (newTaskResponse?.data?.task) {
+                const newTask = newTaskResponse.data.task;
                 setTasks((prevTasks) => {
                     const isTaskAlreadyInState = prevTasks.some((task) => task._id === newTask._id);
                     if (!isTaskAlreadyInState) {
                         return [...prevTasks, newTask];
                     }
-                    console.log("Task already exists in the state. Not adding again.");
+                    console.log('Task already exists in the state. Not adding again.');
                     return prevTasks;
                 });
             } else {
-                console.error("Invalid task response", newTaskResponse);
+                console.error('Invalid task response', newTaskResponse);
             }
-        })();
-    }, [taskValue]); 0  
-    
+        };
+
+        addNewTask();
+
+        taskValue.taskName = null;
+        taskValue.text = null;
+        taskValue.date = null;
+        taskValue.status = null;
+        taskValue.category = null;
+        taskValue.file = null;
+
+        setChanged((prev:boolean)=>!prev)
+
+    }, [taskValue]);
 
     useEffect(() => {
         if (!dueValue) return;
@@ -209,7 +220,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                     case 'today':
                         filteredTasks = todaysTask.filter(task => {
                             const taskDueDate = new Date(task.dueDate);
-                            return taskDueDate.toDateString() === currentDate.toDateString(); 
+                            return taskDueDate.toDateString() === currentDate.toDateString();
                         });
                         break;
 
@@ -251,29 +262,29 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
     };
 
     const handleDeleteSelected = () => {
-       (async()=>{
-        const taskArray = Array.from(selectedTasks)
-        await deleteBatch(taskArray)
-        setTasks((prev) =>
-            prev.filter((task) => !selectedTasks.has(task._id))
-        );
-        setSelectedTasks(new Set());
-       })()
+        (async () => {
+            const taskArray = Array.from(selectedTasks)
+            await deleteBatch(taskArray)
+            setTasks((prev) =>
+                prev.filter((task) => !selectedTasks.has(task._id))
+            );
+            setSelectedTasks(new Set());
+        })()
     };
 
     const handleBulkStatusChange = (status: string) => {
-       (async()=>{
-        console.log(selectedTasks)
-        console.log(status)
-        const taskArray = Array.from(selectedTasks)
-        const taskStatus=status
-        await statusChangeBatch(taskArray,taskStatus)
-        setTasks((prev) =>
-            prev.map((task) =>
-                selectedTasks.has(task._id) ? { ...task, status } : task
-            )
-        );
-       })()
+        (async () => {
+            console.log(selectedTasks)
+            console.log(status)
+            const taskArray = Array.from(selectedTasks)
+            const taskStatus = status
+            await statusChangeBatch(taskArray, taskStatus)
+            setTasks((prev) =>
+                prev.map((task) =>
+                    selectedTasks.has(task._id) ? { ...task, status } : task
+                )
+            );
+        })()
     };
 
 
@@ -283,6 +294,7 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
 
     return (
         <>
+
             <div className="mx-4 border-b border-gray-300"></div>
             <div className="flex mx-4 mb-0 text-gray-500">
                 <span className="font-bold w-1/5">Task</span>
@@ -386,12 +398,12 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                                                                     }
                                                                     className="appearance-none bg-gray-300 border rounded-lg py-2 px-4 pr-10"
                                                                 >
-                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="todo">Todo</option>
-                                                        
-                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="inprogress">
+                                                                    <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="todo">Todo</option>
+
+                                                                    <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="inprogress">
                                                                         In Progress
                                                                     </option>
-                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="completed">
+                                                                    <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="completed">
                                                                         Complete
                                                                     </option>
                                                                 </select>
@@ -403,15 +415,15 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                                                                 <select
                                                                     value={dropdownValue}
                                                                     onChange={(e) =>
-                                                                        handleEdit(e, task._id)
+                                                                        handleAction(e, task._id)
                                                                     }
                                                                     className="appearance-none bg-gray-100 font-bold  rounded-lg py-2 px-4 pr-10"
                                                                 >
                                                                     <option selected disabled value="">...</option>
-                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="edit">
+                                                                    <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="edit">
                                                                         Edit
                                                                     </option>
-                                                                    <option  className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="delete">
+                                                                    <option className=" bg-[#FFF9F9] text-black hover:bg-[#7B1984] hover:text-white" value="delete">
                                                                         Delete
                                                                     </option>
                                                                 </select>
@@ -442,8 +454,8 @@ function List({ categoryValue, searchValue, taskValue, dueValue }: any) {
                     <select
                         className="px-2 py-1 border rounded-full"
                         style={{
-                            backgroundColor: "#8D8A8A24", 
-                            color: "white", 
+                            backgroundColor: "#8D8A8A24",
+                            color: "white",
                         }}
                         onChange={(e) => handleBulkStatusChange(e.target.value)}
                     >

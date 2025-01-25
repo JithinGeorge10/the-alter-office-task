@@ -11,6 +11,16 @@ import Modal from "../components/Modal";
 import Board from "../components/Board";
 
 function Home() {
+  const [filterCategory, setFilterCategory] = useState('');
+  const [dueCategory, setDueCategory] = useState('');
+  const [searchTitle, setSearchTitle] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [taskDetails, setTaskDetails] = useState({});
+  const [taskDetailsBoard, setTaskDetailsBoard] = useState({});
+  const [activeView, setActiveView] = useState('list');
+  const [changed, setChanged] =useState(false)
+
   const location = useLocation();
   const { userId } = location.state || {};
   useEffect(() => {
@@ -27,14 +37,6 @@ function Home() {
     }
   }, [userToken]);
 
-  const [filterCategory, setFilterCategory] = useState('');
-  const [dueCategory, setDueCategory] = useState('');
-  const [searchTitle, setSearchTitle] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [taskDetails, setTaskDetails] = useState({});
-  const [taskDetailsBoard, setTaskDetailsBoard] = useState({});
-  const [activeView, setActiveView] = useState('list');
 
   const handleSearchChange = (e: any) => {
     const searchKey = e.target.value;
@@ -59,6 +61,8 @@ function Home() {
     });
     navigate('/login');
   };
+
+
 
   return (
     <>
@@ -136,10 +140,10 @@ function Home() {
           <Modal modalValue={setIsModalOpen} addTaskValue={setTaskDetails} addTaskValueBoard={setTaskDetailsBoard} />
         )}
         <div style={{ display: activeView === 'list' ? 'block' : 'none' }}>
-          <List categoryValue={filterCategory} searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} />
+          <List key="list" categoryValue={filterCategory}  searchValue={searchTitle} taskValue={taskDetails} dueValue={dueCategory} setChanged={setChanged} changed={changed}/>
         </div>
         <div style={{ display: activeView === 'board' ? 'block' : 'none' }}>
-          <Board categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetailsBoard} searchValue={searchTitle} />
+          <Board key="board" categoryValue={filterCategory} dueValue={dueCategory} taskValue={taskDetails} searchValue={searchTitle} setChanged={setChanged} changed={changed} />
         </div>
 
       </div>

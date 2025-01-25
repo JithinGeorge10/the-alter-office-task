@@ -12,9 +12,8 @@ export const addTask = async (req, res) => {
       const lastTask = await Task.findOne({ userId }).sort({ position: -1 });
       const newPosition = lastTask ? lastTask.position + 1 : 1;
       
-      // Create a new task history entry with the creation time
-      const createdAt = new Date().toLocaleString(); // Gets the current date and time
-      const historyEntry = `Created this task on ${createdAt}`;
+      const createdAt = new Date().toLocaleString(); 
+      const historyEntry = `You Created this task on ${createdAt}`;
       
       const newTask = new Task({
         userId,
@@ -25,7 +24,7 @@ export const addTask = async (req, res) => {
         category,
         position: newPosition,
         attachments: [fileUrl],
-        history: [historyEntry], // Add the history entry here
+        history: [historyEntry], 
       });
 
       const savedTask = await newTask.save();
@@ -139,11 +138,16 @@ export const editTask = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized: Token is missing or invalid' });
     }
     console.log(req.body)
+    const createdAt = new Date().toLocaleString(); 
+    const historyEntry = `You edited on ${createdAt}`;
     const { taskId, userId, taskName, description, date, status, category ,editImage} = req.body;
 
     const updatedTask = await Task.findOneAndUpdate(
       { _id: taskId, userId: userId },
       {
+        $push: {
+          history: historyEntry, 
+        },
         title: taskName,
         description,
         dueDate: date,
@@ -153,6 +157,7 @@ export const editTask = async (req, res) => {
       },
       { new: true }
     );
+    
 
     if (!updatedTask) {
       return res.status(404).json({ message: 'Task not found or you are not authorized to edit this task' });

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { FaBold, FaItalic, FaListOl, FaListUl, FaTimes, } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-function Modal({ modalValue, addTaskValue,addTaskValueBoard }: any) {
+function Modal({ modalValue, addTaskValue, addTaskValueBoard }: any) {
     const storedUserId = localStorage.getItem('userId');
 
     const navigate = useNavigate();
@@ -54,8 +54,8 @@ function Modal({ modalValue, addTaskValue,addTaskValueBoard }: any) {
                 alert("Please fill in all the required fields.");
                 return;
             }
-            addTaskValue({ taskName, text, date, status, category, storedUserId,file });
-            addTaskValueBoard({ taskName, text, date, status, category, storedUserId,file });
+            const newTask = { taskName, text, date, status, category, storedUserId, file };
+            addTaskValue(newTask); 
             setTaskName('')
             setText('')
             setFile(null)
