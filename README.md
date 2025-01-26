@@ -75,4 +75,10 @@ This is a **To-Do List application** built with modern web development tools and
 - **MongoDB**  
 - **Firebase** (set up project and credentials)  
 
-Hosted Live Link:https://task-management-pi-three.vercel.app/
+Hosted Platforms:
+Frontend: Vercel
+Backend: Render
+
+
+Hosted Live Link:
+https://task-management-pi-three.vercel.app/
