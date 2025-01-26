@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { app } from "../firebase/config";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { getQuizQuestions, verifyJwt } from '../services/loginService';
+import { getQuizQuestions } from '../services/loginService';
 
 interface LoginProps {
   setAuthenticated: (auth: boolean) => void;

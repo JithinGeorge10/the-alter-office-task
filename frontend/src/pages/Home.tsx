@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
 import { useLocation } from 'react-router-dom';
 import {
   FaThLarge, FaSearch, FaListUl,
@@ -9,7 +8,6 @@ import Navbar from "../components/Navbar";
 import List from "../components/List";
 import Modal from "../components/Modal";
 import Board from "../components/Board";
-import { verifyJwt } from "../services/loginService";
 
 function Home({setAuthenticated}:any) {
   const [filterCategory, setFilterCategory] = useState('');
@@ -20,7 +18,6 @@ function Home({setAuthenticated}:any) {
   const [taskDetails, setTaskDetails] = useState({});
   const [activeView, setActiveView] = useState('list');
   const [changed, setChanged] = useState(false)
-  const navigate = useNavigate();
   const location = useLocation();
   const { userId } = location.state || {};
   useEffect(() => {
