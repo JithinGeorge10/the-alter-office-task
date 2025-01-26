@@ -34,6 +34,7 @@ export const login = async (req, res) => {
 
         res.cookie('jwt', token, {
             httpOnly: false, 
+            domain: 'task-management-pi-three.vercel.app',
             maxAge,
             sameSite: 'none',
             secure: true, 
