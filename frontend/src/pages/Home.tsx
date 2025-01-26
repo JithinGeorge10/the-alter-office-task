@@ -7,6 +7,7 @@ import Navbar from "../components/Navbar";
 import List from "../components/List";
 import Modal from "../components/Modal";
 import Board from "../components/Board";
+import { logoutUser } from "../services/loginService";
 
 function Home({setAuthenticated}:any) {
   const [filterCategory, setFilterCategory] = useState('');
@@ -59,12 +60,15 @@ function Home({setAuthenticated}:any) {
     setIsModalOpen(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
 
-    document.cookie.split(";").forEach(cookie => {
-      const name = cookie.split("=")[0].trim();
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    });
+    // document.cookie.split(";").forEach(cookie => {
+    //   const name = cookie.split("=")[0].trim();
+    //   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    // });
+
+    await logoutUser()
+    
     setAuthenticated(false)
     // navigate('/login');
   };
