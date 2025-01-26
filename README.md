@@ -12,7 +12,7 @@
 1. **Clone the repository**:  
    ```bash  
    git clone https://github.com/JithinGeorge10/the-alter-office-task.git 
-   cd <repository-folder>  https://github.com/JithinGeorge10/the-alter-office-task
+   cd  https://github.com/JithinGeorge10/the-alter-office-task
 
 
 
@@ -75,3 +75,4 @@ This is a **To-Do List application** built with modern web development tools and
 - **MongoDB**  
 - **Firebase** (set up project and credentials)  
 
+Hosted Live Link:https://task-management-pi-three.vercel.app/
