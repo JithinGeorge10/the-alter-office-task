@@ -3,20 +3,30 @@ import { app } from "../firebase/config";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { getQuizQuestions } from '../services/loginService';
+import { getQuizQuestions, verifyJwt } from '../services/loginService';
 
-
-const Login: React.FC = () => {
+interface LoginProps {
+  setAuthenticated: (auth: boolean) => void;
+}
+const Login: React.FC<LoginProps>  = ({setAuthenticated}) => {
     const navigate = useNavigate();
-    let userToken = Cookies.get('jwt');
+    // let userToken = Cookies.get('jwt');
 
 
-    useEffect(() => {
-        if (userToken) {
-          navigate('/');
-        }
-      }, [ userToken]);
-
+    // useEffect(() => {
+    //     if (userToken) {
+    //       navigate('/');
+    //     }
+    //   }, [ userToken]);
+  // useEffect(() => {
+  //   (async()=>{
+  //    const response= await verifyJwt()
+  //    console.log({response});
+  //    if(response){  
+  //     navigate('/')
+  //    }
+  //   })()
+  // }, []);
      
 
 
@@ -29,6 +39,7 @@ const Login: React.FC = () => {
           const user = result.user;
           const userData = await getQuizQuestions(user);
           if (userData.data) {
+            setAuthenticated(true)
             navigate('/', {
               state: {
                 userId:userData.data._id,

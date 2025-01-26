@@ -51,7 +51,14 @@ export const login = async (req, res) => {
 
 export const verfiyJwt = async (req, res) => {
     try {
-      console.log(req.cookies)
+      const token = req.cookies.jwt
+              if (!token) {
+                  return res.status(401).send('you are not authenticated')
+              }
+              jwt.verify(token, process.env.JWT_KEY, async (err: any, payload: { userId: any }) => {
+                  if (err) return res.status(403).send('Token is not valid')
+                    res.json({success:true})
+              })
     } catch (error) {
         console.error('Error during login:', error);
         return res.status(500).send('Internal Server Error');

@@ -11,7 +11,7 @@ import Modal from "../components/Modal";
 import Board from "../components/Board";
 import { verifyJwt } from "../services/loginService";
 
-function Home() {
+function Home({setAuthenticated}:any) {
   const [filterCategory, setFilterCategory] = useState('');
   const [dueCategory, setDueCategory] = useState('');
   const [searchTitle, setSearchTitle] = useState('');
@@ -20,7 +20,7 @@ function Home() {
   const [taskDetails, setTaskDetails] = useState({});
   const [activeView, setActiveView] = useState('list');
   const [changed, setChanged] = useState(false)
-
+  const navigate = useNavigate();
   const location = useLocation();
   const { userId } = location.state || {};
   useEffect(() => {
@@ -28,21 +28,23 @@ function Home() {
       localStorage.setItem('userId', userId);
     }
   }, [userId]);
-  useEffect(() => {
-    (async()=>{
-      await verifyJwt()
-    })()
-  }, []);
-  const navigate = useNavigate();
-  let userToken = Cookies.get('jwt');
-  console.log('console' + Cookies.get('jwt'));
-  console.log('userToken' + userToken);
+  // useEffect(() => {
+  //   (async()=>{
+  //    const response= await verifyJwt()
+  //    if(!response){
+  //     navigate('/login')
+  //    }
+  //   })()
+  // }, []);
+  // let userToken = Cookies.get('jwt');
+  // console.log('console' + Cookies.get('jwt'));
+  // console.log('userToken' + userToken);
 
-  useEffect(() => {
-    if (!userToken) {
-      navigate('/login');
-    }
-  }, [userToken]);
+  // useEffect(() => {
+  //   if (!userToken) {
+  //     navigate('/login');
+  //   }
+  // }, [userToken]);
 
 
   const handleSearchChange = (e: any) => {
@@ -62,11 +64,13 @@ function Home() {
   };
 
   const handleLogout = () => {
+
     document.cookie.split(";").forEach(cookie => {
       const name = cookie.split("=")[0].trim();
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     });
-    navigate('/login');
+    setAuthenticated(false)
+    // navigate('/login');
   };
 
 
