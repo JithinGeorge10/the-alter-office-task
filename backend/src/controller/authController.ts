@@ -34,7 +34,6 @@ export const login = async (req, res) => {
 
         res.cookie('jwt', token, {
             httpOnly: false, 
-            domain: '.task-management-pi-three.vercel.app',
             maxAge,
             sameSite: 'none',
             secure: true, 
@@ -50,5 +49,11 @@ export const login = async (req, res) => {
 };
 
 
-
-
+export const verfiyJwt = async (req, res) => {
+    try {
+      console.log(req.cookies)
+    } catch (error) {
+        console.error('Error during login:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+};

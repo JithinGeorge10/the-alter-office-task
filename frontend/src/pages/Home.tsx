@@ -9,6 +9,7 @@ import Navbar from "../components/Navbar";
 import List from "../components/List";
 import Modal from "../components/Modal";
 import Board from "../components/Board";
+import { verifyJwt } from "../services/loginService";
 
 function Home() {
   const [filterCategory, setFilterCategory] = useState('');
@@ -27,7 +28,11 @@ function Home() {
       localStorage.setItem('userId', userId);
     }
   }, [userId]);
-
+  useEffect(() => {
+    (async()=>{
+      await verifyJwt()
+    })()
+  }, []);
   const navigate = useNavigate();
   let userToken = Cookies.get('jwt');
   console.log('console' + Cookies.get('jwt'));
