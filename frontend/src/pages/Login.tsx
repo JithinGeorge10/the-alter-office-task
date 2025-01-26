@@ -2,7 +2,7 @@ import React from 'react';
 import { app } from "../firebase/config";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-import { getQuizQuestions } from '../services/loginService';
+import { loginUser } from '../services/loginService';
 
 interface LoginProps {
   setAuthenticated: (auth: boolean) => void;
@@ -36,7 +36,7 @@ const Login: React.FC<LoginProps>  = ({setAuthenticated}) => {
         try {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
-          const userData = await getQuizQuestions(user);
+          const userData = await loginUser(user);
           if (userData.data) {
             setAuthenticated(true)
             navigate('/', {

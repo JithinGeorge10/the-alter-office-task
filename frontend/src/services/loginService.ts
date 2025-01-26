@@ -1,5 +1,5 @@
 import axios from "axios";
-export const getQuizQuestions = async (user: unknown) => {
+export const loginUser = async (user: unknown) => {
   let response = await axios.post(`${import.meta.env.VITE_AUTH_SERVICE_URL}/user-login`, user, {
     headers: {
       "Content-Type": "application/json",
