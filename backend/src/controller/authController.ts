@@ -35,7 +35,7 @@ export const login = async (req, res) => {
         res.cookie('jwt', token, {
             httpOnly: false, 
             maxAge,
-            sameSite: 'None',
+            sameSite: 'none',
             secure: true, 
             path: '/',
 
